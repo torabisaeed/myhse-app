@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyHSE.app — HCM / ALARP Safety Performance Calculator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 13px; background: #d9d9d9; color: #000; }
+
+/* ── TOP BAR ── */
+.topbar { background: #1f3864; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.topbar h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+.topbar label { font-size: 11px; color: #aec8e8; white-space: nowrap; }
+.topbar input[type=text] { background: #2e4d8c; border: 1px solid #5580c0; color: #fff; padding: 4px 10px; font-size: 13px; border-radius: 2px; width: 260px; font-family: inherit; }
+.btn-print { margin-left: auto; background: #c55a11; color: #fff; border: none; padding: 6px 14px; font-size: 12px; border-radius: 2px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-print:hover { background: #9c480e; }
+
+/* ── LEGEND ── */
+.legend { display: flex; align-items: center; gap: 14px; padding: 5px 16px; background: #f2f2f2; border-bottom: 1px solid #bbb; font-size: 11px; flex-wrap: wrap; }
+.leg { display: flex; align-items: center; gap: 4px; }
+.sw { width: 16px; height: 12px; border: 0.5px solid #999; display: inline-block; }
+
+/* ── REPORT INFO BAR ── */
+.rpt-bar { background: #f0f4fa; border-bottom: 1px solid #bcd; padding: 7px 16px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; font-size: 12px; }
+.rpt-field { display: flex; flex-direction: column; gap: 2px; }
+.rpt-field label { font-size: 10px; color: #666; letter-spacing: 0.04em; }
+.rpt-field input { border: 1px solid #bbb; border-radius: 2px; padding: 3px 7px; font-size: 12px; width: 160px; font-family: inherit; }
+.btn-rpt { background: #1f3864; color: #fff; border: none; padding: 7px 16px; font-size: 12px; border-radius: 2px; cursor: pointer; font-family: inherit; margin-left: auto; white-space: nowrap; }
+.btn-rpt:hover { background: #16305a; }
+
+/* ── WRAP ── */
+.wrap { padding: 10px 8px 20px; overflow-x: auto; }
+
+/* ── TABLES ── */
+table { border-collapse: collapse; font-size: 12px; }
+td, th { border: 1px solid #9e9e9e; padding: 3px 6px; white-space: nowrap; }
+
+.bg-label  { background: #dce6f1; font-weight: 600; min-width: 130px; }
+.bg-data   { background: #dae3f3; }
+.bg-input  { background: #fff2cc; }
+.bg-cyan   { background: #00b0f0; color: #fff; }
+.bg-calc   { background: #e2efda; }
+.bg-assump { background: #f4b8d1; }
+.bg-sp     { background: #ffff00; }
+.bg-new    { background: #d9ead3; border-left: 2px solid #38761d !important; }
+.bg-blank  { background: #f5f5f5; }
+.bg-hdr    { background: #bdd7ee; font-weight: 700; text-align: center; }
+.bg-hdr-fut{ background: #ffe699; font-weight: 700; text-align: center; }
+.bg-sec-cur{ background: #1f3864; color: #fff; font-weight: 700; text-align: center; font-size: 12px; }
+.bg-sec-fut{ background: #ffc000; color: #000; font-weight: 700; text-align: center; font-size: 12px; }
+.bg-srs    { background: #375623; color: #fff; font-weight: 700; }
+.bg-ahc    { background: #843c0c; color: #fff; font-weight: 700; }
+.bg-sp-lbl { background: #7030a0; color: #fff; font-weight: 700; }
+.bg-col0   { background: #305496; color: #fff; font-weight: 700; }
+
+td input[type=number], td input[type=text] {
+  width: 100%; border: none; background: transparent;
+  text-align: right; font-size: 12px;
+  font-family: 'Courier New', monospace; outline: none; color: inherit;
+}
+.bg-calc span, .bg-sp span { font-family: 'Courier New', monospace; display: block; text-align: right; }
+.divider { width: 8px; background: #c0c0c0; border: none !important; }
+
+/* ── BARRIER LABEL CELL ── */
+.barrier-lbl { background: #ffe0b2; font-weight: 400; font-size: 11px; position: relative; }
+.barrier-name-wrap { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.barrier-name-text { flex: 1; font-size: 11px; min-width: 60px; }
+.icon-btn { background: none; border: none; cursor: pointer; font-size: 11px; padding: 1px 3px; border-radius: 2px; line-height: 1; color: #666; }
+.icon-btn:hover { background: #e0e0e0; color: #000; }
+.icon-btn.deactivate-btn { color: #c77700; }
+.icon-btn.remove-btn { color: #c00; }
+.icon-btn.reactivate-btn { color: #1b7e20; }
+
+/* ── LAYER BADGES ── */
+.layer-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 2px; color: #fff; margin-right: 2px; cursor: default; vertical-align: middle; }
+.layer-badge.l1 { background: #1f3864; }
+.layer-badge.l2 { background: #375623; }
+.layer-badge.l3 { background: #843c0c; }
+.layer-badge.l4 { background: #7030a0; }
+.lib-ref-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 2px; background: #e8f0fe; color: #1a56db; border: 1px solid #b8d0fa; margin-right: 2px; cursor: pointer; vertical-align: middle; }
+.lib-ref-badge:hover { background: #d0e4ff; }
+
+/* ── DEACTIVATED BARRIER ── */
+.barrier-row-inactive { opacity: 0.38; }
+.barrier-row-inactive .barrier-name-text { text-decoration: line-through; color: #999; }
+
+/* ── BARRIER CELL WITH NOTE ── */
+.cell-wrap { position: relative; }
+.note-popup { display: none; position: absolute; top: 100%; left: 0; z-index: 50; background: #fffbe6; border: 1px solid #f0c040; border-radius: 3px; padding: 5px 7px; min-width: 200px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.note-popup.open { display: block; }
+.note-popup textarea { width: 200px; height: 52px; font-size: 11px; border: 1px solid #ccc; border-radius: 2px; resize: vertical; font-family: inherit; padding: 3px; }
+.note-popup .note-label { font-size: 10px; color: #888; margin-bottom: 3px; display: block; }
+.note-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f0a000; margin-left: 3px; vertical-align: middle; }
+
+/* ── FUTURE BARRIER CHANGED ── */
+.fut-changed { background: #00b0f0 !important; color: #fff !important; }
+.fut-new-row td.barrier-lbl { background: #d9ead3 !important; border-left: 2px solid #38761d !important; }
+
+/* ── FUTURE NEEDS CONFIRM ── */
+.fut-needs-confirm { background: #ffe0a0 !important; }
+.fut-needs-confirm input { color: #333 !important; }
+
+/* ── INPUT INVALID ── */
+.input-invalid { outline: 2px solid #c00 !important; background: #fff0f0 !important; }
+.input-invalid input { background: transparent; }
+
+/* ── ALARP STATUS ── */
+.alarp-ok     { background: #c6efce !important; color: #375623 !important; font-weight: 700; text-align: center; font-size: 11px; }
+.alarp-fail   { background: #ffc7ce !important; color: #9c0006 !important; font-weight: 700; text-align: center; font-size: 11px; }
+.alarp-na     { background: #f2f2f2 !important; color: #888 !important; text-align: center; font-size: 11px; }
+.alarp-margin { background: #fff3cd !important; color: #856404 !important; font-weight: 700; text-align: center; font-size: 11px; }
+
+/* ── HAZARD HEADER EDIT ── */
+.haz-hdr-wrap { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.haz-edit-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border: 1px solid #aaa; border-radius: 5px; padding: 18px 22px; z-index: 200; min-width: 340px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+.haz-edit-panel h3 { font-size: 13px; margin-bottom: 12px; color: #1f3864; }
+.haz-edit-panel label { font-size: 11px; color: #555; display: block; margin-bottom: 2px; margin-top: 8px; }
+.haz-edit-panel input { border: 1px solid #ccc; border-radius: 2px; padding: 4px 7px; font-size: 12px; width: 100%; font-family: inherit; }
+.haz-edit-panel .btn-row { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+.haz-edit-panel .btn-save { background: #1f3864; color: #fff; border: none; padding: 5px 14px; border-radius: 2px; cursor: pointer; font-size: 12px; }
+.haz-edit-panel .btn-cancel { background: #e0e0e0; color: #333; border: none; padding: 5px 14px; border-radius: 2px; cursor: pointer; font-size: 12px; }
+
+/* ── ADD FUTURE BARRIER ── */
+.add-future-btn { background: #d9ead3; border: 1px dashed #38761d; color: #1b5e20; padding: 3px 10px; font-size: 11px; border-radius: 2px; cursor: pointer; font-family: inherit; margin-top: 4px; }
+.add-future-btn:hover { background: #c6e0b4; }
+.fut-desc-cell { background: #e8f4e8 !important; }
+.fut-desc-cell input[type=text] { font-size: 10px; color: #1b5e20; font-style: italic; text-align: left; }
+
+/* ── BARRIER CONFIG SUB-ROW ── */
+.bconf-row td { background: #f0f4ff; font-size: 10px; color: #333; padding: 2px 6px; border-top: none !important; }
+.bconf-row select { font-size: 10px; border: 1px solid #bbb; border-radius: 2px; padding: 1px 3px; font-family: inherit; }
+
+/* ── PLUS BUTTON (column header) ── */
+.col-plus-btn { background: #e8f0fe; border: 1px solid #b8d0fa; color: #1a56db; font-size: 10px; padding: 1px 4px; border-radius: 2px; cursor: pointer; font-family: inherit; margin-left: 3px; }
+.col-plus-btn:hover { background: #d0e4ff; }
+
+/* ── QUICK-ADD PANEL ── */
+#quick-add-panel { display: none; position: fixed; background: #fff; border: 1px solid #aaa; border-radius: 5px; z-index: 300; min-width: 480px; max-width: 620px; max-height: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); overflow: hidden; flex-direction: column; }
+#quick-add-panel.open { display: flex; }
+.qap-header { background: #1f3864; color: #fff; padding: 8px 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+.qap-body { overflow-y: auto; flex: 1; padding: 6px 0; }
+.qap-footer { padding: 6px 10px; border-top: 1px solid #ddd; display: flex; align-items: center; gap: 8px; background: #f9f9f9; }
+.qap-layer-hdr { font-size: 10px; font-weight: 700; color: #555; padding: 4px 10px 2px; text-transform: uppercase; letter-spacing: 0.05em; background: #f5f5f5; border-bottom: 1px solid #eee; }
+.qap-item { display: flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; border-bottom: 1px solid #f0f0f0; }
+.qap-item:hover { background: #f8f8f8; }
+.qap-item input[type=checkbox] { margin: 0; }
+.qap-item select { font-size: 10px; border: 1px solid #ccc; border-radius: 2px; padding: 1px 3px; }
+.qap-inuse { font-size: 10px; color: #1b7e20; font-weight: 700; }
+.qap-paused { font-size: 10px; color: #c77700; font-weight: 700; }
+.qap-r-val { font-family: 'Courier New', monospace; font-size: 11px; color: #333; min-width: 36px; text-align: right; }
+.qap-item-name { flex: 1; min-width: 120px; }
+.scroll-btn { font-size: 10px; background: #e8f0fe; border: 1px solid #b8d0fa; color: #1a56db; border-radius: 2px; padding: 1px 4px; cursor: pointer; }
+.btn-add-sel { background: #1f3864; color: #fff; border: none; padding: 4px 12px; font-size: 11px; border-radius: 2px; cursor: pointer; }
+.btn-add-sel:disabled { background: #999; cursor: default; }
+.btn-manual-row { background: #e0e0e0; color: #333; border: none; padding: 4px 10px; font-size: 11px; border-radius: 2px; cursor: pointer; }
+.qap-sel-count { font-size: 11px; color: #555; }
+
+/* ── SRS WARNING ── */
+#srs-warn-high { display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 3px; padding: 7px 12px; margin: 6px 8px; font-size: 11px; color: #856404; }
+#srs-warn-high.show { display: block; }
+.srs-warn-high { display: none; }
+#independence-note { font-size: 10px; color: #777; margin: 4px 8px; font-style: italic; }
+
+/* ── LIBRARY PANEL ── */
+.lib-panel { background: #fff; border: 1px solid #bbb; border-radius: 4px; margin: 8px 8px 20px; padding: 0; }
+.lib-panel-header { background: #1f3864; color: #fff; padding: 10px 14px; border-radius: 4px 4px 0 0; display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.lib-panel-header-title { font-size: 13px; font-weight: 700; }
+.lib-panel-header-desc { font-size: 11px; color: #aec8e8; flex: 1; }
+.lib-panel-header-note { font-size: 10px; color: #aec8e8; align-self: center; }
+.lib-filters { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f5f7fb; border-bottom: 1px solid #dde4ef; flex-wrap: wrap; }
+.lib-layer-tabs { display: flex; gap: 4px; }
+.lib-tab { background: #e0e8f8; border: 1px solid #bcd; color: #333; padding: 3px 9px; font-size: 11px; border-radius: 3px; cursor: pointer; font-family: inherit; }
+.lib-tab.active { background: #1f3864; color: #fff; border-color: #1f3864; }
+.lib-haz-filters { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.lib-haz-filters label { display: flex; align-items: center; gap: 3px; cursor: pointer; }
+.lib-search { border: 1px solid #ccc; border-radius: 3px; padding: 3px 7px; font-size: 11px; font-family: inherit; width: 160px; }
+.lib-table-wrap { overflow-x: auto; max-height: 340px; overflow-y: auto; }
+.lib-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.lib-table th { background: #e8eef8; padding: 4px 8px; border: 1px solid #ccc; font-weight: 700; white-space: nowrap; position: sticky; top: 0; }
+.lib-table td { border: 1px solid #ddd; padding: 3px 7px; }
+.lib-table tr:nth-child(even) td { background: #f8faff; }
+.lib-table tr:hover td { background: #eef3ff; }
+.lib-table td.lib-name-cell { min-width: 160px; }
+.lib-in-use-badge { font-size: 9px; font-weight: 700; color: #1b7e20; background: #d4edda; padding: 1px 4px; border-radius: 2px; }
+.lib-paused-badge { font-size: 9px; font-weight: 700; color: #c77700; background: #fff3cd; padding: 1px 4px; border-radius: 2px; }
+.lib-panel-footer { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid #ddd; background: #f9f9f9; flex-wrap: wrap; }
+.btn-lib-add { background: #1f3864; color: #fff; border: none; padding: 5px 14px; font-size: 12px; border-radius: 2px; cursor: pointer; }
+.btn-lib-add:disabled { background: #999; cursor: default; }
+.lib-sel-count { font-size: 11px; color: #555; }
+.lib-footer-note { font-size: 10px; color: #888; flex: 1; }
+.lib-row-highlight { outline: 2px solid #f0a000 !important; }
+
+/* ── ONBOARDING ROW ── */
+.onboarding-row td { background: #e8f0fe; border: 1px solid #b8d0fa; font-size: 11px; color: #1a3a6e; padding: 7px 12px; line-height: 1.7; }
+
+/* ── REPORT MODAL ── */
+#report-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 300; overflow-y: auto; padding: 20px; }
+.report-box { background: #fff; max-width: 900px; margin: 0 auto; border-radius: 4px; box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+.report-topbar { background: #1f3864; color: #fff; padding: 10px 18px; display: flex; align-items: center; border-radius: 4px 4px 0 0; }
+.report-topbar span { font-size: 13px; font-weight: 700; }
+.report-topbar button { margin-left: 10px; background: transparent; border: 1px solid #fff; color: #fff; padding: 3px 10px; cursor: pointer; border-radius: 2px; font-size: 11px; }
+.report-topbar button.print-btn { background: #c55a11; border-color: #c55a11; }
+#report-content { padding: 36px 48px; font-family: Georgia, serif; font-size: 13px; line-height: 1.8; color: #111; }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 18px; border-radius: 4px; font-size: 12px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+#toast.show { opacity: 1; }
+#toast.warn { background: #c55a11; }
+
+/* ── PRINT / PDF (A4 landscape) ── */
+@media print {
+  @page { size: A4 landscape; margin: 10mm 8mm; }
+  .topbar .btn-print, .legend, .rpt-bar, #report-modal, .add-future-btn,
+  .icon-btn, .note-popup, .haz-edit-panel,
+  .lib-panel, #quick-add-panel, #toast, .srs-warn-high,
+  #srs-warn-high, #independence-note { display: none !important; }
+  body { background: #fff; font-size: 10px; }
+  .wrap { padding: 0; overflow: visible; }
+  table { font-size: 9px; }
+  td, th { padding: 2px 4px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ TOP BAR ════ -->
+<div class="topbar">
+  <h1>MyHSE.app &nbsp;|&nbsp; HCM / ALARP Safety Performance Calculator <span style="font-size:10px;opacity:0.7;">v11</span></h1>
+  <label>Crossing / Location:</label>
+  <input type="text" id="loc" value="SP McKee Intersection" oninput="document.title='MyHSE — '+this.value">
+  <button class="btn-print" onclick="window.print()">Print / PDF (A4 Landscape)</button>
+</div>
+
+<!-- ════ LEGEND ════ -->
+<div class="legend">
+  <strong>Color key:</strong>
+  <div class="leg"><div class="sw" style="background:#dae3f3"></div>Past data</div>
+  <div class="leg"><div class="sw" style="background:#fff2cc"></div>User input</div>
+  <div class="leg"><div class="sw" style="background:#00b0f0"></div>Modified future</div>
+  <div class="leg"><div class="sw" style="background:#e2efda"></div>Calculated</div>
+  <div class="leg"><div class="sw" style="background:#f4b8d1"></div>Assumption</div>
+  <div class="leg"><div class="sw" style="background:#ffff00"></div>Safety performance</div>
+  <div class="leg"><div class="sw" style="background:#d9ead3;border-left:3px solid #38761d"></div>New future barrier</div>
+  <div class="leg"><div class="sw" style="background:#e8e8e8"></div>Deactivated barrier</div>
+</div>
+
+<!-- ════ REPORT INFO BAR ════ -->
+<div class="rpt-bar">
+  <strong style="font-size:11px;color:#1f3864;letter-spacing:0.05em;text-transform:uppercase;">Report</strong>
+  <div class="rpt-field"><label>Analyst</label><input type="text" id="rpt-analyst" placeholder="Name, title"></div>
+  <div class="rpt-field"><label>Agency</label><input type="text" id="rpt-agency" placeholder="Organization"></div>
+  <div class="rpt-field"><label>Reference</label><input type="text" id="rpt-ref" placeholder="SAF-2026-001" style="width:120px;"></div>
+  <div class="rpt-field"><label>Date</label><input type="date" id="rpt-date" style="width:130px;"></div>
+  <div class="rpt-field"><label>ALARP margin (%)</label><input type="number" id="alarp-margin" value="10" min="0" max="100" step="1" style="width:70px;" oninput="calc()"></div>
+  <button class="btn-rpt" onclick="generateReport()">📄 Generate Management Report</button>
+</div>
+
+<div class="wrap">
+
+<!-- ════ SECTION 1: INCIDENT DATA ════ -->
+<table style="margin-bottom:8px;" id="top-table">
+<thead>
+<tr>
+  <td class="bg-label" style="min-width:120px;"></td>
+  <td class="bg-hdr">Incident</td>
+  <td class="bg-hdr">Near Miss</td>
+  <td class="bg-hdr">Track Intrusion</td>
+  <td class="bg-hdr">Total (Inc+NM)</td>
+  <td class="bg-hdr">F Annual</td>
+  <td class="bg-hdr">T (hrs)</td>
+  <td class="bg-hdr" style="min-width:220px;font-size:10px;">F formula / T formula</td>
+  <td style="width:10px;border:none;background:transparent;"></td>
+  <td class="bg-hdr" colspan="2">T Parameters</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="bg-label">Pedestrian — collision</td>
+  <td class="bg-data"><input type="number" id="pInc" value="2" min="0" oninput="calc()"></td>
+  <td class="bg-data"><input type="number" id="pNM" value="11" min="0" oninput="calc()"></td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-calc"><span id="pTot">—</span></td>
+  <td class="bg-calc"><span id="pF">—</span></td>
+  <td class="bg-calc"><span id="pT">—</span></td>
+  <td style="font-size:10px;color:#555;background:#fafafa;">(Inc+NM)÷yrs &nbsp;|&nbsp; T = svc×revHrs×2×minExp÷60</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-input" style="min-width:55px;"><input type="number" id="svcOW" value="6" min="0" step="1" oninput="calc()"></td>
+  <td style="font-size:11px;color:#555;">Service trains one-way / hr</td>
+</tr>
+<tr>
+  <td class="bg-label">Vehicle — collision</td>
+  <td class="bg-data"><input type="number" id="vInc" value="7" min="0" oninput="calc()"></td>
+  <td class="bg-data"><input type="number" id="vNM" value="9" min="0" oninput="calc()"></td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-calc"><span id="vTot">—</span></td>
+  <td class="bg-calc"><span id="vF">—</span></td>
+  <td class="bg-calc"><span id="vT">—</span></td>
+  <td style="font-size:10px;color:#555;background:#fafafa;">(Inc+NM)÷yrs &nbsp;|&nbsp; T = svc×revHrs×2×minExp÷60</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-input"><input type="number" id="revHrs" value="15" min="0" step="1" oninput="calc()"></td>
+  <td style="font-size:11px;color:#555;">Revenue hours / day</td>
+</tr>
+<tr>
+  <td class="bg-label">Bike — collision</td>
+  <td class="bg-data"><input type="number" id="bInc" value="1" min="0" oninput="calc()"></td>
+  <td class="bg-data"><input type="number" id="bNM" value="1" min="0" oninput="calc()"></td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-calc"><span id="bTot">—</span></td>
+  <td class="bg-calc"><span id="bF">—</span></td>
+  <td class="bg-calc"><span id="bT">—</span></td>
+  <td style="font-size:10px;color:#555;background:#fafafa;">(Inc+NM)÷yrs &nbsp;|&nbsp; SRS=MIN(Ped,Veh)×0.9</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-input"><input type="number" id="minExp" value="1" min="0" step="0.5" oninput="calc()"></td>
+  <td style="font-size:11px;color:#555;">Minutes of exposure per crossing</td>
+</tr>
+<tr>
+  <td class="bg-label">Vehicle — track intrusion</td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-data"><input type="number" id="vIntr" value="20" min="0" oninput="calc()"></td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;">—</td>
+  <td class="bg-calc"><span id="trkF">—</span></td>
+  <td class="bg-calc"><span id="trkT">—</span></td>
+  <td style="font-size:10px;color:#555;background:#fafafa;">Intrusions÷yrs &nbsp;|&nbsp; T = trkPct×darkHrs</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-input"><input type="number" id="trkPct" value="0.333" min="0" max="1" step="0.001" oninput="calc()"></td>
+  <td style="font-size:11px;color:#555;">Traffic portion entering track zone</td>
+</tr>
+<tr>
+  <td class="bg-label">Pedestrian — track intrusion</td>
+  <td class="bg-data"><input type="number" id="piInc" value="2" min="0" oninput="calc()"></td>
+  <td class="bg-data"><input type="number" id="piNM" value="11" min="0" oninput="calc()"></td>
+  <td class="bg-blank" style="color:#bbb;text-align:center;font-size:10px;">n/a</td>
+  <td class="bg-calc"><span id="piTot">—</span></td>
+  <td class="bg-calc"><span id="piF">—</span></td>
+  <td class="bg-calc"><span id="piT">—</span></td>
+  <td style="font-size:10px;color:#555;background:#fafafa;">(Inc+NM)÷yrs &nbsp;|&nbsp; T = trkPct×darkHrs (dark exposure)</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-input"><input type="number" id="darkHrs" value="6" min="0" max="24" step="0.5" oninput="calc()"></td>
+  <td style="font-size:11px;color:#555;">Dark hours / day</td>
+</tr>
+<tr>
+  <td class="bg-label" style="font-size:11px;">Totals &nbsp;|&nbsp; Data period:
+    <input type="number" id="dataYrs" value="3" min="1" max="20" style="width:32px;border:1px solid #aaa;border-radius:2px;padding:1px 3px;font-size:11px;font-family:'Courier New',monospace;text-align:right;" oninput="calc()"> yrs
+  </td>
+  <td class="bg-calc"><span id="tInc">—</span></td>
+  <td class="bg-calc"><span id="tNM">—</span></td>
+  <td class="bg-calc"><span id="tIntr">—</span></td>
+  <td class="bg-calc"><span id="tTot">—</span></td>
+  <td class="bg-blank"></td><td class="bg-blank"></td>
+  <td style="font-size:10px;color:#777;background:#fafafa;">T_col=svc×revHrs×2×minExp÷60 &nbsp;|&nbsp; T_intr=trkPct×darkHrs</td>
+  <td style="border:none;background:transparent;"></td>
+  <td class="bg-blank" colspan="2"></td>
+</tr>
+</tbody>
+</table>
+
+<!-- ════ SECTION 2: MAIN CALC TABLE ════ -->
+<table id="main-tbl">
+<thead>
+<tr>
+  <td class="bg-col0" rowspan="2" style="min-width:130px;text-align:center;vertical-align:middle;font-size:12px;">Event</td>
+  <td class="bg-sec-cur" colspan="5">CURRENT CONDITION</td>
+  <td class="divider" rowspan="2"></td>
+  <td class="bg-sec-fut" colspan="5">FUTURE CONDITION</td>
+</tr>
+<tr>
+  <td class="bg-hdr" style="min-width:82px;" id="hdr_cur_ped"><div class="haz-hdr-wrap">Train vs Ped <button class="icon-btn" onclick="openHazEdit('ped')" title="Edit hazard template">✏</button><button class="col-plus-btn" onclick="openQAP('ped',this)" title="Add barrier from library for Pedestrian column">＋</button></div></td>
+  <td class="bg-hdr" style="min-width:82px;" id="hdr_cur_veh"><div class="haz-hdr-wrap">Train vs Veh <button class="icon-btn" onclick="openHazEdit('veh')" title="Edit hazard template">✏</button><button class="col-plus-btn" onclick="openQAP('veh',this)" title="Add barrier from library for Vehicle column">＋</button></div></td>
+  <td class="bg-hdr" style="min-width:82px;" id="hdr_cur_bike"><div class="haz-hdr-wrap">Train vs Bike <button class="icon-btn" onclick="openHazEdit('bike')" title="Edit hazard template">✏</button></div></td>
+  <td class="bg-hdr" style="min-width:95px;" id="hdr_cur_trk"><div class="haz-hdr-wrap">Veh Track Intr <button class="icon-btn" onclick="openHazEdit('trk')" title="Edit hazard template">✏</button><button class="col-plus-btn" onclick="openQAP('trk',this)" title="Add barrier from library for Track Intrusion column">＋</button></div></td>
+  <td class="bg-hdr" style="min-width:95px;" id="hdr_cur_pi"><div class="haz-hdr-wrap">Ped Track Intr <button class="icon-btn" onclick="openHazEdit('pi')" title="Edit hazard template">✏</button><button class="col-plus-btn" onclick="openQAP('pi',this)" title="Add barrier from library for Ped Track Intrusion column">＋</button></div></td>
+  <td class="bg-hdr-fut" style="min-width:82px;">Train vs Ped <button class="col-plus-btn" onclick="openQAP('ped',this)" title="Add barrier — Ped future">＋</button></td>
+  <td class="bg-hdr-fut" style="min-width:82px;">Train vs Veh <button class="col-plus-btn" onclick="openQAP('veh',this)" title="Add barrier — Veh future">＋</button></td>
+  <td class="bg-hdr-fut" style="min-width:82px;">Train vs Bike</td>
+  <td class="bg-hdr-fut" style="min-width:95px;">Veh Track Intr <button class="col-plus-btn" onclick="openQAP('trk',this)" title="Add barrier — Trk future">＋</button></td>
+  <td class="bg-hdr-fut" style="min-width:95px;">Ped Track Intr <button class="col-plus-btn" onclick="openQAP('pi',this)" title="Add barrier — Pi future">＋</button></td>
+</tr>
+</thead>
+<tbody id="main-tbody">
+<!-- rows injected by JS -->
+</tbody>
+</table>
+
+<!-- SRS high warning -->
+<div id="srs-warn-high">⚠ High SRS warning: One or more hazard columns has SRS > 0.99. PHC has limited discrimination at this range — small input changes produce large Sp swings. Verify barrier independence assumptions.</div>
+<div id="independence-note">* SRS assumes barriers fail independently. Real-world dependencies may reduce effective reliability by 5–20%. Consider sensitivity analysis when barriers share common causes.</div>
+
+<!-- Add future barrier button -->
+<div style="margin-top:6px;">
+  <button class="add-future-btn" onclick="addFutureBarrier()">+ Add new future safety barrier row</button>
+</div>
+
+<!-- ════ TERMINOLOGY GLOSSARY ════ -->
+<div style="margin-top:10px;font-size:11px;color:#444;max-width:1200px;background:#f9f9f9;border:1px solid #ccc;padding:9px 14px;border-radius:2px;line-height:1.9;">
+  <strong style="font-size:12px;">Terminology &amp; Formulae</strong><br>
+  <strong>RHC</strong> — Residual Hazard Cloud (HazPoC/shift) = S × P × F × E × T ÷ 8 &nbsp;|&nbsp;
+  <strong>PHC</strong> — Potential Hazard Cloud = RHC₁ ÷ (1 − SRS₁) — the uncontrolled baseline, fixed from current condition &nbsp;|&nbsp;
+  <strong>RHC₂</strong> — Residual Hazard Cloud, Future = PHC × (1 − SRS₂) &nbsp;|&nbsp;
+  <strong>AHC</strong> — Acceptable Hazard Cloud = S × P × F<sub>ALARP</sub> × E × T ÷ 8 — the tolerable level per ALARP target frequency &nbsp;|&nbsp;
+  <strong>UCHC</strong> — Uncontrolled HazPoC Above AHC = max(RHC − AHC, 0) — excess hazard still above the acceptable threshold &nbsp;|&nbsp;
+  <strong>SRS</strong> — Safety Reliability Score = 1 − ∏(1 − rᵢ) — combined probability that at least one barrier prevents escalation &nbsp;|&nbsp;
+  <strong>Sp</strong> — Safety Performance = 1 − RHC ÷ PHC — fraction of potential hazard controlled (0–100%) &nbsp;|&nbsp;
+  <strong>Sp<sub>ALARP</sub></strong> — minimum Sp required to meet the ALARP frequency target &nbsp;|&nbsp;
+  <strong>Gap closure rate</strong> = (Sp₂ − Sp₁) ÷ (Sp<sub>ALARP</sub> − Sp₁) &nbsp;|&nbsp;
+  <strong>Bike SRS</strong> = MIN(SRS<sub>Ped</sub>, SRS<sub>Veh</sub>) × 0.9 by default — or enter r manually per barrier using the "manual ✎" toggle
+</div>
+</div><!-- end .wrap -->
+
+<!-- ════ SAFETY BARRIER LIBRARY PANEL ════ -->
+<div class="lib-panel" id="lib-panel">
+  <div class="lib-panel-header">
+    <div>
+      <div class="lib-panel-header-title">🛡 Safety Barrier Library</div>
+      <div class="lib-panel-header-desc">Select barriers → configure condition → Add to assessment. Sorted by layer on insert.</div>
+    </div>
+    <div class="lib-panel-header-note">Reliability = nominal × condition multiplier &nbsp;|&nbsp; Applies to future condition; promote to current manually</div>
+  </div>
+  <div class="lib-filters">
+    <div class="lib-layer-tabs" id="lib-layer-tabs">
+      <button class="lib-tab active" onclick="setLibLayer(0,this)">All layers</button>
+      <button class="lib-tab" onclick="setLibLayer(1,this)">L1 Foundational</button>
+      <button class="lib-tab" onclick="setLibLayer(2,this)">L2 Detection + Active</button>
+      <button class="lib-tab" onclick="setLibLayer(3,this)">L3 Physical</button>
+      <button class="lib-tab" onclick="setLibLayer(4,this)">L4 Human + Awareness</button>
+    </div>
+    <div class="lib-haz-filters">
+      <label><input type="checkbox" id="lf_ped" checked onchange="renderLibTable()"> Pedestrian</label>
+      <label><input type="checkbox" id="lf_veh" checked onchange="renderLibTable()"> Vehicle</label>
+      <label><input type="checkbox" id="lf_bike" checked onchange="renderLibTable()"> Bike</label>
+      <label><input type="checkbox" id="lf_trk" checked onchange="renderLibTable()"> Veh Track Intr</label>
+      <label><input type="checkbox" id="lf_pi" checked onchange="renderLibTable()"> Ped Track Intr</label>
+    </div>
+    <input type="text" class="lib-search" id="lib-search" placeholder="Search barriers…" oninput="renderLibTable()">
+  </div>
+  <div class="lib-table-wrap">
+    <table class="lib-table">
+      <thead>
+        <tr>
+          <th>☐</th><th>Layer</th><th>Barrier Name</th><th>Applies to</th>
+          <th>r min</th><th>r nom</th><th>r max</th><th>Sensitivity</th>
+          <th>Condition</th><th>Multiplier</th><th>Final r</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="lib-tbody"></tbody>
+    </table>
+  </div>
+  <div class="lib-panel-footer">
+    <button class="btn-lib-add" id="lib-add-btn" disabled onclick="addLibraryBarriers()">+ Add selected to assessment</button>
+    <span class="lib-sel-count" id="lib-sel-count">0 selected</span>
+    <span class="lib-footer-note">Barriers with r=0 for a hazard column are skipped for that column. Bike SRS is always auto-derived.</span>
+  </div>
+</div>
+
+<!-- ════ HAZARD EDIT PANEL ════ -->
+<div class="haz-edit-panel" id="haz-edit-panel">
+  <h3 id="haz-edit-title">Edit Hazard Template</h3>
+  <label>Hazard name</label>
+  <input type="text" id="he-name" placeholder="e.g. Train vs Pedestrian">
+  <label>Default S (severity)</label>
+  <input type="number" id="he-s" min="0" max="10" step="0.5">
+  <label>Default F_alarp (per yr)</label>
+  <input type="number" id="he-falarp" min="0" step="0.01">
+  <label>T method</label>
+  <select id="he-tmethod" style="border:1px solid #ccc;border-radius:2px;padding:4px 7px;font-size:12px;width:100%;font-family:inherit;">
+    <option value="collision">Collision — svc×revHrs×2×minExp÷60</option>
+    <option value="intrusion">Intrusion — trkPct×darkHrs</option>
+  </select>
+  <label>Notes</label>
+  <input type="text" id="he-notes" placeholder="Optional notes">
+  <div class="btn-row">
+    <button class="btn-cancel" onclick="closeHazEdit()">Cancel</button>
+    <button class="btn-save" onclick="saveHazTemplate()">Save template</button>
+  </div>
+</div>
+
+<!-- ════ QUICK-ADD PANEL ════ -->
+<div id="quick-add-panel">
+  <div class="qap-header">
+    <span id="qap-title">Add barrier</span>
+    <button onclick="closeQAP()" style="background:transparent;border:1px solid #fff;color:#fff;padding:2px 7px;cursor:pointer;border-radius:2px;font-size:11px;">✕</button>
+  </div>
+  <div class="qap-body" id="qap-body"></div>
+  <div class="qap-footer">
+    <button class="btn-add-sel" id="qap-add-btn" disabled onclick="addQAPSelected()">Add selected</button>
+    <span class="qap-sel-count" id="qap-sel-count">0 selected</span>
+    <button class="btn-manual-row" onclick="closeQAP();addFutureBarrier()">Manual row</button>
+  </div>
+</div>
+
+<!-- ════ REPORT MODAL ════ -->
+<div id="report-modal">
+  <div class="report-box">
+    <div class="report-topbar">
+      <span>Management Report Preview</span>
+      <button onclick="document.getElementById('report-modal').style.display='none'">Close</button>
+      <button class="print-btn" onclick="printReport()">Print / Save PDF</button>
+    </div>
+    <div id="report-content"></div>
+  </div>
+</div>
+
+<!-- ════ TOAST ════ -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONSTANTS — must be declared FIRST before any function or loadLS call
+// ══════════════════════════════════════════════════════════
+
+const LAYER_NAMES = {
+  1: 'Foundational / System',
+  2: 'Detection + Active Response',
+  3: 'Physical',
+  4: 'Human + Awareness'
+};
+
+const COL_LABELS = {
+  ped: 'Train vs Ped',
+  veh: 'Train vs Veh',
+  bike: 'Train vs Bike',
+  trk: 'Veh Track Intr',
+  pi:  'Ped Track Intr'
+};
+
+// Condition multiplier tables
+const COND_TABLES = {
+  standard: [
+    { key:'as_designed',  label:'As designed',    mult:1.0  },
+    { key:'good',         label:'Good condition', mult:0.9  },
+    { key:'moderate',     label:'Moderate',       mult:0.75 },
+    { key:'degraded',     label:'Degraded',       mult:0.5  },
+    { key:'poor',         label:'Poor',           mult:0.3  },
+  ],
+  active: [
+    { key:'as_designed',  label:'As designed',    mult:1.0  },
+    { key:'tested',       label:'Tested (recent)',mult:0.95 },
+    { key:'untested',     label:'Untested',       mult:0.7  },
+    { key:'partial',      label:'Partial coverage',mult:0.5 },
+  ],
+  human: [
+    { key:'trained',      label:'Trained & monitored', mult:1.0  },
+    { key:'trained_only', label:'Trained, no monitor',  mult:0.8  },
+    { key:'informal',     label:'Informal briefing',    mult:0.55 },
+    { key:'no_training',  label:'No formal training',   mult:0.3  },
+  ],
+};
+
+// 35-barrier library
+const BARRIER_LIBRARY = [
+  // Layer 1 — Foundational / System
+  { id:'LIB-01', name:'Automatic Train Protection (ATP)',          layer:1, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.7, rNom:0.85, rMax:0.92, condType:'standard', condSens:'High — degrades with maintenance gaps' },
+  { id:'LIB-02', name:'Grade Separation (overpass/underpass)',     layer:1, hazardGroups:['ped','veh','bike'],            rMin:0.9, rNom:0.95, rMax:0.97, condType:'standard', condSens:'Low — structural; long-term reliability' },
+  { id:'LIB-03', name:'Signal Interlock (cab + wayside)',          layer:1, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.65,rNom:0.80, rMax:0.90, condType:'active',   condSens:'High — requires regular testing' },
+  { id:'LIB-04', name:'Positive Train Control (PTC)',              layer:1, hazardGroups:['ped','veh','bike'],            rMin:0.7, rNom:0.82, rMax:0.90, condType:'active',   condSens:'High — depends on GPS and comms integrity' },
+  { id:'LIB-05', name:'Automatic Warning System (grade crossing)', layer:1, hazardGroups:['ped','veh','bike','trk'],      rMin:0.55,rNom:0.72, rMax:0.82, condType:'standard', condSens:'Moderate — depends on signal actuation timing' },
+  // Layer 2 — Detection + Active Response
+  { id:'LIB-06', name:'Obstacle Detection System (ODS)',           layer:2, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.4, rNom:0.60, rMax:0.75, condType:'active',   condSens:'High — FOV, calibration, and lighting dependent' },
+  { id:'LIB-07', name:'Video Analytics / AI Monitoring',           layer:2, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.35,rNom:0.55, rMax:0.70, condType:'active',   condSens:'High — model drift and occlusion risk' },
+  { id:'LIB-08', name:'Inductive Loop Vehicle Detector',           layer:2, hazardGroups:['veh','trk'],                  rMin:0.4, rNom:0.62, rMax:0.75, condType:'active',   condSens:'Moderate — sensor wear and pavement condition' },
+  { id:'LIB-09', name:'Radar Presence Detector',                   layer:2, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.45,rNom:0.65, rMax:0.78, condType:'active',   condSens:'Moderate — range and interference dependent' },
+  { id:'LIB-10', name:'Interlocked Gate (full-barrier)',            layer:2, hazardGroups:['veh','trk'],                  rMin:0.5, rNom:0.70, rMax:0.82, condType:'standard', condSens:'Moderate — mechanical wear and power supply' },
+  { id:'LIB-11', name:'Emergency Notification System (ENS)',       layer:2, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.3, rNom:0.50, rMax:0.65, condType:'active',   condSens:'High — communication infrastructure dependent' },
+  { id:'LIB-12', name:'Pedestrian Countdown Timer',                layer:2, hazardGroups:['ped','bike','pi'],             rMin:0.25,rNom:0.40, rMax:0.55, condType:'standard', condSens:'Low — displays only; behavioural compliance varies' },
+  { id:'LIB-13', name:'Active CCTV with Operator Monitoring',      layer:2, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.3, rNom:0.48, rMax:0.60, condType:'human',    condSens:'High — operator alertness and response time' },
+  // Layer 3 — Physical
+  { id:'LIB-14', name:'Full-Height Pedestrian Fence / Railing',    layer:3, hazardGroups:['ped','bike','pi'],             rMin:0.5, rNom:0.65, rMax:0.78, condType:'standard', condSens:'Low — structural; inspect for gaps and damage' },
+  { id:'LIB-15', name:'Half-Barrier Gate (pedestrian)',            layer:3, hazardGroups:['ped','bike'],                  rMin:0.35,rNom:0.55, rMax:0.68, condType:'standard', condSens:'Moderate — compliance dependent' },
+  { id:'LIB-16', name:'Anti-Trespass Panel (track zone)',          layer:3, hazardGroups:['pi','trk'],                   rMin:0.4, rNom:0.58, rMax:0.70, condType:'standard', condSens:'Moderate — panel integrity and gap management' },
+  { id:'LIB-17', name:'Vehicle Bollards / Crash Barriers',         layer:3, hazardGroups:['veh','trk'],                  rMin:0.55,rNom:0.72, rMax:0.85, condType:'standard', condSens:'Low — passive; tested to vehicular impact standard' },
+  { id:'LIB-18', name:'Channelising Devices (cones/barriers)',     layer:3, hazardGroups:['veh','trk'],                  rMin:0.2, rNom:0.35, rMax:0.50, condType:'standard', condSens:'High — temporary; subject to removal or displacement' },
+  { id:'LIB-19', name:'Raised Median / Divider',                   layer:3, hazardGroups:['veh','trk'],                  rMin:0.45,rNom:0.62, rMax:0.75, condType:'standard', condSens:'Low — infrastructure; durable' },
+  { id:'LIB-20', name:'Track End Barrier / Bumper Block',          layer:3, hazardGroups:['trk','pi'],                   rMin:0.5, rNom:0.68, rMax:0.80, condType:'standard', condSens:'Low — fixed structural element' },
+  // Layer 4 — Human + Awareness
+  { id:'LIB-21', name:'Enhanced Pavement Markings',                layer:4, hazardGroups:['ped','veh','bike','trk'],      rMin:0.1, rNom:0.22, rMax:0.35, condType:'standard', condSens:'Moderate — reflectivity degrades with wear' },
+  { id:'LIB-22', name:'High-Visibility Signage (static)',          layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.1, rNom:0.20, rMax:0.32, condType:'standard', condSens:'Low — static; review placement and legibility annually' },
+  { id:'LIB-23', name:'Variable Message Sign (VMS)',               layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.15,rNom:0.28, rMax:0.40, condType:'active',   condSens:'Moderate — message content and activation logic' },
+  { id:'LIB-24', name:'Tactile Ground Surface Indicators',         layer:4, hazardGroups:['ped','pi'],                   rMin:0.1, rNom:0.18, rMax:0.28, condType:'standard', condSens:'Low — ADA-compliant; inspect for wear' },
+  { id:'LIB-25', name:'Flashing Warning Lights (passive)',         layer:4, hazardGroups:['ped','veh','bike'],            rMin:0.2, rNom:0.32, rMax:0.45, condType:'standard', condSens:'Moderate — power supply and lamp replacement' },
+  { id:'LIB-26', name:'Operator Training Programme',               layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.2, rNom:0.40, rMax:0.55, condType:'human',    condSens:'High — recurrence and refresher interval critical' },
+  { id:'LIB-27', name:'Speed Restriction (temporary/permanent)',   layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.15,rNom:0.30, rMax:0.45, condType:'human',    condSens:'High — compliance-dependent; enforcement required' },
+  { id:'LIB-28', name:'Community Education / Awareness Campaign',  layer:4, hazardGroups:['ped','bike','pi'],             rMin:0.05,rNom:0.12, rMax:0.20, condType:'human',    condSens:'High — diminishes over time without reinforcement' },
+  { id:'LIB-29', name:'Staff / Flagperson at Crossing',            layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.3, rNom:0.50, rMax:0.65, condType:'human',    condSens:'High — alertness, shift length, and weather dependent' },
+  { id:'LIB-30', name:'Night Lighting Enhancement',                layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.15,rNom:0.30, rMax:0.45, condType:'standard', condSens:'Moderate — luminance level and beam direction' },
+  { id:'LIB-31', name:'Audible Warning Device (horn / bell)',      layer:4, hazardGroups:['ped','bike','pi'],             rMin:0.15,rNom:0.28, rMax:0.40, condType:'standard', condSens:'Low — reliability good; compliance varies by user' },
+  { id:'LIB-32', name:'Crosswalk Alignment Redesign',              layer:4, hazardGroups:['ped','bike'],                  rMin:0.1, rNom:0.20, rMax:0.32, condType:'standard', condSens:'Low — infrastructure; review at design stage' },
+  { id:'LIB-33', name:'Refuge Island (pedestrian)',                layer:4, hazardGroups:['ped','bike'],                  rMin:0.15,rNom:0.25, rMax:0.38, condType:'standard', condSens:'Low — passive; dimension and placement key' },
+  { id:'LIB-34', name:'Near-Miss / Close-Call Reporting System',   layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.05,rNom:0.10, rMax:0.18, condType:'human',    condSens:'High — culture and anonymity dependent' },
+  { id:'LIB-35', name:'Safety Inspection Checklist Programme',     layer:4, hazardGroups:['ped','veh','bike','trk','pi'], rMin:0.05,rNom:0.12, rMax:0.20, condType:'human',    condSens:'Moderate — frequency and quality of inspections' },
+];
+
+// Library selection state
+let libSelected = {};
+let libLayer    = 0;
+
+// Quick-add panel state
+let _qapCol       = null;
+let _qapSelected  = {};
+
+// Toast timer
+let _toastTimer = null;
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+const COLS = ['ped','veh','bike','trk','pi'];
+
+const DEFAULT_HAZ = {
+  ped:  { name:'Train vs Ped',       s:9, falarp:0.1, tmethod:'collision' },
+  veh:  { name:'Train vs Veh',       s:6, falarp:0.5, tmethod:'collision' },
+  bike: { name:'Train vs Bike',      s:9, falarp:0.1, tmethod:'collision' },
+  trk:  { name:'Veh Track Intrusion',s:5, falarp:1.0, tmethod:'intrusion' },
+  pi:   { name:'Ped Track Intrusion',s:8, falarp:0.1, tmethod:'intrusion' },
+};
+let hazTemplates = loadLS('hazTemplates', DEFAULT_HAZ);
+
+const DEFAULT_BARRIERS = [
+  { id:'b0', name:'Operator control',       layer:4, active:true, cur:{ped:0.5,veh:0.5,bike:null,trk:0.3,pi:0},    fut:{ped:0.5,veh:0.5,bike:null,trk:0.3,pi:0},    curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b1', name:'Ped signal',             layer:1, active:true, cur:{ped:0.7,veh:0,  bike:null,trk:0,  pi:0.5},  fut:{ped:0.7,veh:0,  bike:null,trk:0,  pi:0.5},  curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b2', name:'Traffic Signal',         layer:1, active:true, cur:{ped:0,  veh:0.7,bike:null,trk:0,  pi:0},    fut:{ped:0.6,veh:0.7,bike:null,trk:0,  pi:0},    curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b3', name:'Blank out sign',         layer:4, active:true, cur:{ped:0,  veh:0.2,bike:null,trk:0,  pi:0},    fut:{ped:0,  veh:0.2,bike:null,trk:0,  pi:0},    curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b4', name:'Road Marker',            layer:4, active:true, cur:{ped:0,  veh:0,  bike:null,trk:0.3,pi:0},    fut:{ped:0.25,veh:0, bike:null,trk:0.3,pi:0.2},  curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b5', name:'Track Night Visibility', layer:4, active:true, cur:{ped:0,  veh:0.05,bike:null,trk:0, pi:0},    fut:{ped:0.4,veh:0.05,bike:null,trk:0.4,pi:0.3}, curDesc:{}, futDesc:{}, isNew:false, libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+  { id:'b6', name:'Fence / Blockage',       layer:3, active:true, cur:{ped:0,  veh:0,  bike:null,trk:0,  pi:0},    fut:{ped:0,  veh:0,  bike:null,trk:0,  pi:0.6},  curDesc:{}, futDesc:{}, isNew:true,  libRef:null, libCondKey:null, libRNom:null, libCondType:null },
+];
+
+// Migration: load from localStorage, apply correct migration pattern
+let barriers = loadLS('barriers', DEFAULT_BARRIERS);
+barriers = barriers.map(b => ({
+  ...b,
+  active:      b.active      !== false,
+  layer:       b.layer       ?? null,
+  libRef:      b.libRef      ?? null,
+  libCondKey:  b.libCondKey  ?? null,
+  libRNom:     b.libRNom     ?? null,
+  libCondType: b.libCondType ?? null,
+}));
+
+let lastResults = {};
+let lastInputs  = {};
+// Per-barrier bike mode: 'auto' = SRS derived from MIN(Ped,Veh)×0.9 | 'manual' = user enters r directly
+let bikeModes = loadLS('bikeModes', {});
+
+// ══════════════════════════════════════════════════════════
+// LOCALSTORAGE HELPERS
+// ══════════════════════════════════════════════════════════
+function loadLS(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch(e) { return def; }
+}
+function saveLS(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+// DOM HELPERS
+// ══════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const n = id => { const el=$(id); if(!el) return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; };
+function setSpan(id, val, d=3) { const el=$(id); if(el) el.textContent=(!isFinite(val)||isNaN(val))?'—':val.toFixed(d); }
+function setPct(id, val) { const el=$(id); if(el) el.textContent=(!isFinite(val)||isNaN(val))?'—':(val*100).toFixed(1)+'%'; }
+
+// ── Toast ──
+function showToast(msg, isWarn=false) {
+  const el = $('toast'); if(!el) return;
+  el.textContent = msg;
+  el.className = isWarn ? 'warn show' : 'show';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = isWarn ? 'warn' : ''; }, 3000);
+}
+
+// ── ALARP status cell ──
+function setAlarp(id, Sp, SpA) {
+  const el=$(id); if(!el) return;
+  el.className='';
+  if(!isFinite(Sp)||isNaN(Sp)){ el.className='alarp-na'; el.textContent='—'; return; }
+  const m = (n('alarp-margin')||10)/100;
+  const gap = SpA - Sp;
+  if(Sp>=SpA)      { el.className='alarp-ok';     el.textContent='✓ ALARP demonstrated'; }
+  else if(gap<=m)  { el.className='alarp-margin';  el.textContent='◑ Margin band — monitor'; }
+  else             { el.className='alarp-fail';    el.textContent='⚠ Needs enhancement'; }
+}
+
+// ── Layer badge HTML ──
+function layerBadge(layer) {
+  if(!layer) return '';
+  const cls = ['','l1','l2','l3','l4'][layer] || '';
+  return `<span class="layer-badge ${cls}" title="${LAYER_NAMES[layer]||''}">L${layer}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// INPUT VALIDATION
+// ══════════════════════════════════════════════════════════
+function validateNonNeg(id) {
+  const el=$(id); if(!el) return;
+  const v=parseFloat(el.value);
+  el.classList.toggle('input-invalid', isNaN(v)||v<0);
+}
+function validateBounded(id, lo, hi) {
+  const el=$(id); if(!el) return;
+  const v=parseFloat(el.value);
+  el.classList.toggle('input-invalid', isNaN(v)||v<lo||v>hi);
+}
+
+// ══════════════════════════════════════════════════════════
+// SRS FORMULA
+// ══════════════════════════════════════════════════════════
+function srsOf(rs) {
+  let p=1; for(const r of rs) { const rv=Math.min(Math.max(r||0,0),1); p*=(1-rv); } return 1-p;
+}
+
+// ══════════════════════════════════════════════════════════
+// BARRIER INSERTION — sorted by layer
+// ══════════════════════════════════════════════════════════
+function insertBarrierSorted(newB) {
+  let insertIdx = barriers.length;
+  for(let i=0; i<barriers.length; i++) {
+    if((barriers[i].layer||99) > (newB.layer||99)) { insertIdx=i; break; }
+  }
+  barriers.splice(insertIdx, 0, newB);
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER MAIN TABLE BODY
+// ══════════════════════════════════════════════════════════
+function renderTable() {
+  const tbody = $('main-tbody');
+  const rows = [];
+
+  // ── Parameter rows ──
+  const paramRows = [
+    { id:'S',  label:'S — Severity',              type:'input',  defVal:{ped:9,veh:6,bike:9,trk:5,pi:8},    step:0.5,  min:0, max:10 },
+    { id:'P',  label:'P — Probability',           type:'input',  defVal:{ped:0.8,veh:0.5,bike:0.9,trk:0.3,pi:0.8}, step:0.1, min:0, max:1 },
+    { id:'F',  label:'F — Per Year (auto)',        type:'calc'  },
+    { id:'E',  label:'E — Exposed persons',        type:'input',  defVal:{ped:1,veh:2,bike:1,trk:2,pi:1},    step:1,    min:0 },
+    { id:'T',  label:'T — Threat time, hrs (auto)',type:'calc'  },
+    { id:'FA', label:'F<sub>ALARP</sub> / yr',     type:'assump', defVal:{ped:0.1,veh:0.5,bike:0.1,trk:1.0,pi:0.1}, step:0.01, min:0 },
+    { id:'RHC',label:'RHC — HazPoC / shift',       type:'result', cls:'bg-srs', style:'background:#375623;' },
+  ];
+
+  paramRows.forEach(row => {
+    let html = `<tr><td class="bg-label" ${row.style?'style="'+row.style+'"':''}>${row.label}</td>`;
+    COLS.forEach(c => {
+      if(row.type==='calc' || row.type==='result') {
+        html += `<td class="bg-calc"><span id="c${row.id}_${c}">—</span></td>`;
+      } else {
+        const cls = row.type==='assump' ? 'bg-assump' : 'bg-input';
+        const val = row.defVal[c];
+        html += `<td class="${cls}"><input type="number" id="c${row.id}_${c}" value="${val}" min="${row.min||0}" ${row.max!=null?'max="'+row.max+'"':''} step="${row.step||1}" oninput="calc()"></td>`;
+      }
+    });
+    html += `<td class="divider"></td>`;
+    COLS.forEach(c => {
+      if(row.type==='calc' || row.type==='result') {
+        const sid = row.type==='result' ? `fRHC2_${c}` : `f${row.id}_${c}`;
+        html += `<td class="bg-calc"><span id="${sid}">—</span></td>`;
+      } else {
+        const cls = row.type==='assump' ? 'bg-assump' : 'bg-input';
+        const val = row.defVal[c];
+        html += `<td class="${cls}"><input type="number" id="f${row.id}_${c}" value="${val}" min="${row.min||0}" ${row.max!=null?'max="'+row.max+'"':''} step="${row.step||1}" oninput="onFutureChange('f${row.id}_${c}','c${row.id}_${c}',this)"></td>`;
+      }
+    });
+    html += '</tr>';
+    rows.push(html);
+  });
+
+  // ── Onboarding instruction row ──
+  rows.push(`<tr class="onboarding-row">
+    <td colspan="12">
+      📋 <strong>How to add safety barriers:</strong><br>
+      ① Click <strong>＋</strong> in any column header above to pick from the library for that hazard group — choose condition → "Add selected"<br>
+      ② Or click "+ Add new future safety barrier row" below the table to enter r-values directly<br>
+      ③ Or scroll to the <strong>Safety Barrier Library</strong> panel below — filter, check, set conditions, "Add selected to assessment"<br>
+      <br>
+      <em>Current r-values = barriers installed today (feeds Sp₁). Enter these manually in the current-side cells.
+      Future r-values (cyan/green cells) = proposed improvements (feeds Sp₂). Added automatically when using library.
+      ⏸ = deactivate (excluded from SRS, row kept for audit). ✕ = remove permanently.</em>
+    </td>
+  </tr>`);
+
+  // ── Barrier section header ──
+  rows.push(`<tr>
+    <td class="bg-col0" style="font-size:11px;text-align:center;">Safety Barriers<br><span style="font-weight:400;">r ∈ [0,1]</span></td>
+    <td colspan="5" style="background:#1f3864;color:#bdd7ee;font-size:11px;padding:3px 8px;">Current barriers — 📝 add description &nbsp;|&nbsp; ✏ rename &nbsp;|&nbsp; ⏸ deactivate (excludes from SRS, keeps row) &nbsp;|&nbsp; ✕ remove</td>
+    <td class="divider"></td>
+    <td colspan="5" style="background:#375623;color:#b7d7a8;font-size:11px;padding:3px 8px;">Future barriers — blue = modified &nbsp;|&nbsp; green border = new &nbsp;|&nbsp; LIB-XX badge → jump to library &nbsp;|&nbsp; ▶ reactivate</td>
+  </tr>`);
+
+  // ── Barrier rows ──
+  barriers.forEach((b, bi) => {
+    rows.push(renderBarrierRow(b, bi));
+  });
+
+  // ── Result rows ──
+  // PHC is current-only; RHC₂ is future-only — render as two separate label cells using noFut/noCur flags
+  const resultRows = [
+    { id:'SRS',   label:'SRS — Safety Reliability Score',       cls:'bg-srs' },
+    { id:'PHC',   label:'PHC — Potential Hazard Cloud (HazPoC)',cls:'bg-srs', noFut:true, futLabel:'RHC₂ — Residual Hazard Cloud, Future (HazPoC)' },
+    { id:'AHC',   label:'AHC — Acceptable Hazard Cloud (HazPoC)',cls:'bg-ahc' },
+    { id:'UCHC',  label:'UCHC — Uncontrolled HazPoC above AHC', cls:'bg-ahc' },
+    { id:'Sp',    label:'Sp — Safety Performance',              cls:'bg-sp-lbl', spanCls:'bg-sp' },
+    { id:'Gap',   label:'Gap to ALARP target',                  cls:'bg-sp-lbl', spanCls:'bg-calc', title:'Cur: SpALARP−Sp1 | Fut: SpALARP−Sp2' },
+    { id:'SpImp', label:'Sp improvement (Sp₂ − Sp₁)',           cls:'bg-sp-lbl', spanCls:'bg-calc' },
+    { id:'Close', label:'Gap closure rate',                     cls:'bg-sp-lbl', spanCls:'bg-calc' },
+    { id:'SpA',   label:'Sp<sub>ALARP</sub> min. required',     cls:'bg-sp-lbl', spanCls:'bg-sp' },
+  ];
+
+  resultRows.forEach(row => {
+    const sc = row.spanCls || 'bg-calc';
+    // For PHC/RHC₂ row: both labels go in the single first cell (cur label / fut label), no extra cells
+    if(row.noFut) {
+      let html = `<tr>
+        <td class="${row.cls}" style="font-size:10px;line-height:1.4;">
+          <span style="display:block;">${row.label}</span>
+          <span style="display:block;color:#b7d7a8;font-size:10px;">${row.futLabel}</span>
+        </td>`;
+      COLS.forEach(c => {
+        html += `<td class="${sc}"><span id="cPHC_${c}">—</span></td>`;
+      });
+      html += `<td class="divider"></td>`;
+      COLS.forEach(c => {
+        html += `<td class="${sc}"><span id="fRHC2b_${c}">—</span></td>`;
+      });
+      html += `</tr>`;
+      rows.push(html);
+      return;
+    }
+    let html = `<tr><td class="${row.cls}" ${row.title?'title="'+row.title+'"':''}>${row.label}</td>`;
+    COLS.forEach(c => {
+      const sid = row.id==='SpImp'?`cSpImp_${c}` : row.id==='Close'?`cClose_${c}` : `c${row.id}_${c}`;
+      html += `<td class="${sc}"><span id="${sid}">—</span></td>`;
+    });
+    html += `<td class="divider"></td>`;
+    COLS.forEach(c => {
+      const sid = `f${row.id}_${c}`;
+      html += `<td class="${sc}"><span id="${sid}">—</span></td>`;
+    });
+    html += '</tr>';
+    rows.push(html);
+  });
+
+  // ── ALARP status row ──
+  let alarpHtml = `<tr><td class="bg-col0" style="font-size:11px;text-align:center;">ALARP Status</td>`;
+  COLS.forEach(c => alarpHtml += `<td id="alarp_c_${c}" class="alarp-na">—</td>`);
+  alarpHtml += `<td class="divider"></td>`;
+  COLS.forEach(c => alarpHtml += `<td id="alarp_f_${c}" class="alarp-na">—</td>`);
+  alarpHtml += '</tr>';
+  rows.push(alarpHtml);
+
+  tbody.innerHTML = rows.join('');
+}
+
+function renderBarrierRow(b, bi) {
+  const isNew = b.isNew;
+  const inactive = b.active === false;
+  const inactiveStyle = inactive ? 'opacity:0.38;' : '';
+
+  let html = `<tr id="brow_${b.id}" class="${isNew?'fut-new-row':''}" style="${inactiveStyle}">`;
+
+  // Label cell
+  let labelStyle = isNew ? 'background:#d9ead3;border-left:2px solid #38761d;' : '';
+  if(inactive) labelStyle += 'background:#e8e8e8;';
+
+  let nameStyle = inactive ? 'text-decoration:line-through;color:#999;' : '';
+
+  const lb = b.layer ? layerBadge(b.layer) : '';
+  const libBadge = b.libRef
+    ? `<span class="lib-ref-badge" onclick="scrollAndHighlightLib('${b.libRef}')" title="Jump to library entry">${b.libRef}</span>`
+    : '';
+
+  const deactivateBtn = inactive
+    ? `<button class="icon-btn reactivate-btn" onclick="reactivateBarrier('${b.id}')" title="Reactivate barrier">▶</button>`
+    : `<button class="icon-btn deactivate-btn" onclick="deactivateBarrier('${b.id}')" title="Deactivate (excludes from SRS, keeps for audit)">⏸</button>`;
+
+  html += `<td class="barrier-lbl" style="${labelStyle}">`
+        + `<div class="barrier-name-wrap">`
+        + lb + libBadge
+        + `<span class="barrier-name-text" id="bname_${b.id}" style="${nameStyle}">${b.name}</span>`
+        + `<button class="icon-btn" onclick="renameBarrier('${b.id}')" title="Rename barrier">✏</button>`
+        + deactivateBtn
+        + `<button class="icon-btn remove-btn" onclick="removeBarrier('${b.id}')" title="Remove barrier permanently">✕</button>`
+        + `</div></td>`;
+
+  // Current cells
+  COLS.forEach(c => {
+    if(c==='bike') {
+      const bikeMode = bikeModes[b.id] || 'auto';
+      if(bikeMode === 'auto') {
+        html += `<td class="bg-blank" style="font-size:10px;color:#999;text-align:center;">← auto<br>
+          <button class="icon-btn" style="font-size:9px;color:#1a56db;" onclick="toggleBikeMode('${b.id}')" title="Switch to manual r entry for Bike column">manual ✎</button></td>`;
+      } else {
+        const bval = b.cur['bike'] != null ? b.cur['bike'] : '';
+        html += `<td class="bg-input" style="text-align:center;">
+          <input type="number" id="cur_${b.id}_bike" value="${bval}" placeholder="0" min="0" max="1" step="0.05"
+            ${inactive?'disabled':''} oninput="onCurBikeManual('${b.id}',this)" style="width:90%;">
+          <button class="icon-btn" style="font-size:9px;color:#c77700;display:block;margin:0 auto;" onclick="toggleBikeMode('${b.id}')" title="Switch back to auto (MIN(Ped,Veh)×0.9)">← auto</button>
+        </td>`;
+      }
+      return;
+    }
+    const val = b.cur[c];
+    const hasNote = b.curDesc && b.curDesc[c];
+    const noteDotCur = hasNote ? '<span class="note-dot"></span>' : '';
+    html += `<td class="bg-input">
+      <div class="cell-wrap">
+        <input type="number" id="cur_${b.id}_${c}" value="${val||''}" placeholder="0" min="0" max="1" step="0.05"
+          ${inactive?'disabled':''} oninput="onCurChange('${b.id}','${c}',this)">
+        <button class="icon-btn" onclick="toggleNote('note_cur_${b.id}_${c}')" title="Add description" style="font-size:10px;">📝${noteDotCur}</button>
+        <div class="note-popup" id="note_cur_${b.id}_${c}">
+          <span class="note-label">Description of this barrier at this location:</span>
+          <textarea oninput="saveNote('${b.id}','cur','${c}',this.value)">${(b.curDesc&&b.curDesc[c])||''}</textarea>
+          <div style="text-align:right;margin-top:2px;"><button style="font-size:9px;background:#fee;border:1px solid #faa;border-radius:2px;padding:1px 5px;cursor:pointer;" onclick="resetNote('${b.id}','cur','${c}')">✕ reset</button></div>
+        </div>
+      </div>
+    </td>`;
+  });
+
+  html += `<td class="divider"></td>`;
+
+  // Future cells
+  COLS.forEach(c => {
+    if(c==='bike') {
+      const bikeMode = bikeModes[b.id] || 'auto';
+      if(bikeMode === 'auto') {
+        html += `<td class="bg-blank" style="font-size:10px;color:#999;text-align:center;">← auto</td>`;
+      } else {
+        const futBikeVal = b.fut['bike'] != null ? b.fut['bike'] : (b.cur['bike'] || '');
+        const changed = isNew || (parseFloat(futBikeVal)||0) !== (parseFloat(b.cur['bike'])||0);
+        const cls2 = changed ? (isNew ? 'bg-new' : 'bg-cyan') : 'bg-input';
+        html += `<td class="${cls2}" id="fcell_${b.id}_bike">
+          <input type="number" id="fut_${b.id}_bike" value="${futBikeVal}" placeholder="0" min="0" max="1" step="0.05"
+            ${inactive?'disabled':''} oninput="onFutBikeManual('${b.id}',this)" style="width:90%;">
+        </td>`;
+      }
+      return;
+    }
+    const curVal = b.cur[c] || 0;
+    const futVal = b.fut[c] != null ? b.fut[c] : curVal;
+    const changed = isNew || (futVal !== curVal && futVal > 0);
+    const isDegradation = (futVal < curVal && curVal > 0);
+    let cls = changed ? (isNew ? 'bg-new' : 'bg-cyan') : 'bg-input';
+    const futNote = b.futDesc && b.futDesc[c];
+    const noteDotFut = futNote ? '<span class="note-dot"></span>' : '';
+    const degradStyle = isDegradation ? 'border-bottom:2px solid #f0a000;' : '';
+    const degradTitle = isDegradation ? 'title="⚠ Degradation scenario: future r models a worsening condition."' : '';
+    const futNoteBlock = (isNew||changed)
+      ? `<button class="icon-btn" onclick="toggleNote('note_fut_${b.id}_${c}')" title="Describe this future control" style="font-size:10px;">📝${noteDotFut}</button>
+        <div class="note-popup" id="note_fut_${b.id}_${c}">
+          <span class="note-label">Description of proposed future control:</span>
+          <textarea oninput="saveFutNote('${b.id}','${c}',this.value)">${futNote||''}</textarea>
+          <div style="text-align:right;margin-top:2px;"><button style="font-size:9px;background:#fee;border:1px solid #faa;border-radius:2px;padding:1px 5px;cursor:pointer;" onclick="resetNote('${b.id}','fut','${c}')">✕ reset</button></div>
+        </div>`
+      : '';
+    html += `<td class="${cls}" id="fcell_${b.id}_${c}" style="${degradStyle}" ${degradTitle}>
+      <div class="cell-wrap">
+        <input type="number" id="fut_${b.id}_${c}" value="${futVal||''}" placeholder="0" min="0" max="1" step="0.05"
+          ${inactive?'disabled':''} oninput="onFutBarChange('${b.id}','${c}',this)">
+        ${futNoteBlock}
+      </div>
+    </td>`;
+  });
+
+  html += '</tr>';
+
+  // Library config sub-row
+  if(b.libRef) {
+    const libItem = BARRIER_LIBRARY.find(x => x.id === b.libRef);
+    if(libItem) {
+      const condTable = COND_TABLES[libItem.condType] || COND_TABLES.standard;
+      const condKey = b.libCondKey || condTable[0].key;
+      const condEntry = condTable.find(x => x.key === condKey) || condTable[0];
+      const finalR = parseFloat(Math.min(libItem.rNom * condEntry.mult, libItem.rMax).toFixed(3));
+      const condOpts = condTable.map(ce =>
+        `<option value="${ce.key}" ${ce.key===condKey?'selected':''}>${ce.label}</option>`
+      ).join('');
+      html += `<tr id="bconf_${b.id}" class="bconf-row">
+        <td colspan="12" style="padding:3px 8px;">
+          <span style="color:#555;">${b.libRef}</span> ${layerBadge(libItem.layer)}
+          &nbsp;r ∈ [${libItem.rMin}–${libItem.rMax}] &nbsp;nom = ${libItem.rNom}
+          &nbsp;|&nbsp; <strong>Condition:</strong>
+          <select onchange="updateLibBarrierCond('${b.id}',this.value)">${condOpts}</select>
+          ×${condEntry.mult} → <strong>r = ${finalR}</strong>
+          &nbsp;|&nbsp; ${libItem.condSens}
+          &nbsp;|&nbsp; Applies to: ${libItem.hazardGroups.join(', ')}
+        </td>
+      </tr>`;
+    }
+  }
+
+  // Description row for new barriers
+  if(isNew && !b.libRef) {
+    html += `<tr><td class="bg-blank" style="font-size:10px;color:#666;padding-left:8px;">↳ new barrier description:</td>`;
+    html += `<td colspan="5" class="fut-desc-cell"><input type="text" id="newdesc_${b.id}" value="${b.desc||''}" placeholder="Describe what this new control is and how it reduces the hazard..." oninput="saveBarrierDesc('${b.id}',this.value)" style="text-align:left;font-size:11px;color:#1b5e20;width:100%;"></td>`;
+    html += `<td class="divider"></td><td colspan="5" class="bg-blank"></td></tr>`;
+  }
+
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════
+// BARRIER INTERACTION HANDLERS
+// ══════════════════════════════════════════════════════════
+function onCurChange(bid, col, el) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  const v = parseFloat(el.value);
+  if(isNaN(v)||v<0||v>1) { el.classList.add('input-invalid'); return; }
+  el.classList.remove('input-invalid');
+  const val = v;
+  // Check if cur now exceeds existing fut — if so, flag future cell for confirmation
+  const futEl = $(`fut_${bid}_${col}`);
+  if(futEl && b._futModified) {
+    const futVal = parseFloat(futEl.value)||0;
+    if(val > futVal) {
+      const fcell = $(`fcell_${bid}_${col}`);
+      if(fcell && !fcell.classList.contains('fut-needs-confirm')) {
+        fcell.classList.add('fut-needs-confirm');
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'icon-btn'; confirmBtn.style.fontSize='10px'; confirmBtn.textContent='✔';
+        confirmBtn.title = 'Confirm: raise future r to match current';
+        confirmBtn.onclick = () => {
+          futEl.value = val; b.fut[col] = val;
+          fcell.classList.remove('fut-needs-confirm');
+          confirmBtn.remove();
+          saveLS('barriers',barriers); calc();
+        };
+        fcell.querySelector('.cell-wrap').appendChild(confirmBtn);
+      }
+    }
+  }
+  b.cur[col] = val;
+  if(futEl && !b._futModified) { futEl.value = val; b.fut[col] = val; }
+  saveLS('barriers', barriers);
+  calc();
+}
+
+function onFutBarChange(bid, col, el) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  const v = parseFloat(el.value);
+  if(isNaN(v)||v<0||v>1) { el.classList.add('input-invalid'); return; }
+  el.classList.remove('input-invalid');
+  b.fut[col] = v;
+  b._futModified = true;
+  const cell = $(`fcell_${bid}_${col}`);
+  if(cell) {
+    const curVal = b.cur[col]||0;
+    const changed = b.isNew || v !== curVal;
+    cell.className = changed ? (b.isNew?'bg-new':'bg-cyan') : 'bg-input';
+    // Degradation scenario
+    if(v < curVal && curVal > 0) {
+      cell.style.borderBottom = '2px solid #f0a000';
+      cell.title = '⚠ Degradation scenario: future r models a worsening condition.';
+    } else {
+      cell.style.borderBottom = '';
+      cell.title = '';
+    }
+    if(changed && !cell.querySelector('.note-popup')) {
+      const noteHtml = `<button class="icon-btn" onclick="toggleNote('note_fut_${bid}_${col}')" style="font-size:10px;">📝</button>
+        <div class="note-popup" id="note_fut_${bid}_${col}">
+          <span class="note-label">Description of proposed future control:</span>
+          <textarea oninput="saveFutNote('${bid}','${col}',this.value)"></textarea>
+        </div>`;
+      cell.querySelector('.cell-wrap').insertAdjacentHTML('beforeend', noteHtml);
+    }
+  }
+  saveLS('barriers', barriers);
+  calc();
+}
+
+function toggleNote(id) {
+  const el = $(id); if(!el) return;
+  el.classList.toggle('open');
+}
+
+function saveNote(bid, side, col, val) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  if(!b.curDesc) b.curDesc = {};
+  b.curDesc[col] = val;
+  saveLS('barriers', barriers);
+}
+
+function saveFutNote(bid, col, val) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  if(!b.futDesc) b.futDesc = {};
+  b.futDesc[col] = val;
+  saveLS('barriers', barriers);
+}
+
+function resetNote(bid, side, col) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  if(side==='cur') { if(b.curDesc) { b.curDesc[col]=''; } }
+  else             { if(b.futDesc) { b.futDesc[col]=''; } }
+  saveLS('barriers', barriers);
+  renderTable(); calc();
+  showToast('Description cleared.');
+}
+
+function saveBarrierDesc(bid, val) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  b.desc = val;
+  saveLS('barriers', barriers);
+}
+
+function renameBarrier(bid) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  const newName = prompt('Enter new barrier name:', b.name);
+  if(newName && newName.trim()) {
+    b.name = newName.trim();
+    saveLS('barriers', barriers);
+    renderTable(); calc();
+  }
+}
+
+function toggleBikeMode(bid) {
+  const current = bikeModes[bid] || 'auto';
+  bikeModes[bid] = current === 'auto' ? 'manual' : 'auto';
+  saveLS('bikeModes', bikeModes);
+  // Reset bike values to null when switching to auto so calc uses derived SRS
+  if(bikeModes[bid] === 'auto') {
+    const b = barriers.find(x=>x.id===bid);
+    if(b) { b.cur['bike'] = null; b.fut['bike'] = null; saveLS('barriers', barriers); }
+  }
+  renderTable(); calc();
+}
+
+function onCurBikeManual(bid, el) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  const v = parseFloat(el.value);
+  if(isNaN(v)||v<0||v>1) { el.classList.add('input-invalid'); return; }
+  el.classList.remove('input-invalid');
+  b.cur['bike'] = v;
+  // Mirror to future if not modified
+  if(!b._futModified) { b.fut['bike'] = v; const futEl=$(`fut_${bid}_bike`); if(futEl) futEl.value=v; }
+  saveLS('barriers', barriers); calc();
+}
+
+function onFutBikeManual(bid, el) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  const v = parseFloat(el.value);
+  if(isNaN(v)||v<0||v>1) { el.classList.add('input-invalid'); return; }
+  el.classList.remove('input-invalid');
+  b.fut['bike'] = v; b._futModified = true;
+  saveLS('barriers', barriers); calc();
+}
+
+function deactivateBarrier(bid) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  b.active = false;
+  saveLS('barriers', barriers);
+  renderTable(); calc(); renderLibTable();
+}
+
+function reactivateBarrier(bid) {
+  const b = barriers.find(x=>x.id===bid); if(!b) return;
+  b.active = true;
+  saveLS('barriers', barriers);
+  renderTable(); calc(); renderLibTable();
+}
+
+function removeBarrier(bid) {
+  if(!confirm('Remove this barrier permanently? This cannot be undone.')) return;
+  barriers = barriers.filter(x=>x.id!==bid);
+  saveLS('barriers', barriers);
+  renderTable(); calc(); renderLibTable();
+  showToast('Barrier removed.');
+}
+
+function addFutureBarrier() {
+  const id = 'bx' + Date.now();
+  const newB = {
+    id, name:'New future barrier', isNew:true, active:true, layer:null, desc:'',
+    libRef:null, libCondKey:null, libRNom:null, libCondType:null,
+    cur:  {ped:0,veh:0,bike:null,trk:0,pi:0},
+    fut:  {ped:0,veh:0,bike:null,trk:0,pi:0},
+    curDesc:{}, futDesc:{}
+  };
+  barriers.push(newB);
+  saveLS('barriers', barriers);
+  renderTable(); calc();
+  const el = $(`brow_${id}`);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function onFutureChange(futId, curId, el) {
+  const curEl = $(curId);
+  if(!curEl) { calc(); return; }
+  const futVal = parseFloat(el.value)||0;
+  const curVal = parseFloat(curEl.value)||0;
+  const cell = el.closest('td');
+  if(cell) cell.className = (futVal !== curVal) ? 'bg-cyan' : (cell.className.includes('assump') ? 'bg-assump' : 'bg-input');
+  calc();
+}
+
+// ══════════════════════════════════════════════════════════
+// LIBRARY CONDITION UPDATE
+// ══════════════════════════════════════════════════════════
+function updateLibBarrierCond(bid, condKey) {
+  const b = barriers.find(x => x.id === bid); if(!b) return;
+  const libItem = BARRIER_LIBRARY.find(x => x.id === b.libRef); if(!libItem) return;
+  const condTable = COND_TABLES[libItem.condType] || COND_TABLES.standard;
+  const condEntry = condTable.find(x => x.key === condKey) || condTable[0];
+  const finalR = parseFloat(Math.min(libItem.rNom * condEntry.mult, libItem.rMax).toFixed(3));
+  b.libCondKey = condKey;
+  libItem.hazardGroups.forEach(g => { if(g !== 'bike') b.fut[g] = finalR; });
+  b.desc = `${LAYER_NAMES[libItem.layer]} — ${condEntry.label} (×${condEntry.mult}) — r = ${finalR}`;
+  b._futModified = true;
+  saveLS('barriers', barriers);
+  calc(); renderTable(); renderLibTable();
+}
+
+// ══════════════════════════════════════════════════════════
+// SCROLL + HIGHLIGHT LIBRARY ROW
+// ══════════════════════════════════════════════════════════
+function scrollAndHighlightLib(libId) {
+  libLayer = 0;
+  // Activate "All layers" tab
+  const tabs = document.querySelectorAll('.lib-tab');
+  tabs.forEach((t,i) => t.classList.toggle('active', i===0));
+  renderLibTable();
+  setTimeout(() => {
+    const row = $(`librow_${libId}`);
+    if(row) {
+      row.scrollIntoView({behavior:'smooth', block:'center'});
+      row.classList.add('lib-row-highlight');
+      setTimeout(() => row.classList.remove('lib-row-highlight'), 2000);
+    }
+  }, 80);
+}
+
+// ══════════════════════════════════════════════════════════
+// QUICK-ADD PANEL
+// ══════════════════════════════════════════════════════════
+function openQAP(col, btn) {
+  _qapCol = col;
+  _qapSelected = {};
+  const panel = $('quick-add-panel');
+  $('qap-title').textContent = `Add barrier — ${COL_LABELS[col]} column`;
+
+  // Position near button
+  const rect = btn.getBoundingClientRect();
+  panel.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
+  panel.style.left = Math.max(4, rect.left + window.scrollX - 40) + 'px';
+
+  renderQAPBody();
+  panel.classList.add('open');
+  updateQAPCount();
+
+  setTimeout(() => document.addEventListener('click', _qapOutsideClick), 10);
+}
+
+function closeQAP() {
+  $('quick-add-panel').classList.remove('open');
+  document.removeEventListener('click', _qapOutsideClick);
+}
+
+function _qapOutsideClick(e) {
+  const panel = $('quick-add-panel');
+  if(panel && !panel.contains(e.target)) closeQAP();
+}
+
+function renderQAPBody() {
+  const col = _qapCol;
+  const inUseActive   = new Set(barriers.filter(b => b.libRef && b.active !== false).map(b => b.libRef));
+  const inUseInactive = new Set(barriers.filter(b => b.libRef && b.active === false).map(b => b.libRef));
+
+  const items = BARRIER_LIBRARY.filter(item => item.hazardGroups.includes(col));
+  const byLayer = {1:[],2:[],3:[],4:[]};
+  items.forEach(item => { if(byLayer[item.layer]) byLayer[item.layer].push(item); });
+
+  let html = '';
+  [1,2,3,4].forEach(layer => {
+    const layerItems = byLayer[layer]; if(!layerItems||!layerItems.length) return;
+    html += `<div class="qap-layer-hdr">${layerBadge(layer)} ${LAYER_NAMES[layer]}</div>`;
+    layerItems.forEach(item => {
+      const isActive   = inUseActive.has(item.id);
+      const isPaused   = inUseInactive.has(item.id);
+      const condTable  = COND_TABLES[item.condType] || COND_TABLES.standard;
+      const selKey     = (_qapSelected[item.id] && _qapSelected[item.id].condKey) || condTable[0].key;
+      const condEntry  = condTable.find(x=>x.key===selKey) || condTable[0];
+      const finalR     = parseFloat(Math.min(item.rNom * condEntry.mult, item.rMax).toFixed(3));
+      const condOpts   = condTable.map(ce =>
+        `<option value="${ce.key}" ${ce.key===selKey?'selected':''}>${ce.label}</option>`
+      ).join('');
+      const checked    = _qapSelected[item.id] ? 'checked' : '';
+
+      if(isActive) {
+        html += `<div class="qap-item">
+          <input type="checkbox" disabled>
+          ${layerBadge(layer)}
+          <span class="qap-item-name">${item.name} <span style="font-size:9px;color:#888;">${item.id}</span></span>
+          <span class="qap-inuse">✓ In use</span>
+          <button class="scroll-btn" onclick="scrollToBarrierRow('${item.id}')">↑ table</button>
+        </div>`;
+      } else {
+        html += `<div class="qap-item" id="qapitem_${item.id}">
+          <input type="checkbox" id="qapchk_${item.id}" ${checked}
+            onchange="onQAPCheck('${item.id}',this.checked,'${col}')">
+          ${layerBadge(layer)}
+          <span class="qap-item-name">${item.name} <span style="font-size:9px;color:#888;">${item.id}</span></span>
+          ${isPaused?'<span class="qap-paused">⏸ Paused</span>':''}
+          <select id="qapsel_${item.id}" onchange="onQAPCondChange('${item.id}','${col}',this.value)">${condOpts}</select>
+          <span class="qap-r-val" id="qapr_${item.id}">${finalR}</span>
+        </div>`;
+      }
+    });
+  });
+
+  if(!html) html = '<div style="padding:10px;color:#888;font-size:11px;">No library barriers apply to this column.</div>';
+  $('qap-body').innerHTML = html;
+}
+
+function onQAPCheck(libId, checked, col) {
+  const condEl = $(`qapsel_${libId}`);
+  const condKey = condEl ? condEl.value : COND_TABLES.standard[0].key;
+  if(checked) { _qapSelected[libId] = { condKey }; }
+  else { delete _qapSelected[libId]; }
+  updateQAPCount();
+}
+
+function onQAPCondChange(libId, col, condKey) {
+  // Auto-select row on condition change if not already selected
+  const chk = $(`qapchk_${libId}`);
+  const item = BARRIER_LIBRARY.find(x=>x.id===libId); if(!item) return;
+  const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+  const condEntry = condTable.find(x=>x.key===condKey)||condTable[0];
+  const finalR = parseFloat(Math.min(item.rNom*condEntry.mult,item.rMax).toFixed(3));
+  const rEl = $(`qapr_${libId}`); if(rEl) rEl.textContent = finalR;
+  if(chk && !chk.checked) { chk.checked=true; }
+  _qapSelected[libId] = { condKey };
+  updateQAPCount();
+}
+
+function updateQAPCount() {
+  const count = Object.keys(_qapSelected).length;
+  const el = $('qap-sel-count'); if(el) el.textContent = count+' selected';
+  const btn = $('qap-add-btn'); if(btn) btn.disabled = count===0;
+}
+
+function addQAPSelected() {
+  const col = _qapCol;
+  const inUseActive = new Set(barriers.filter(b=>b.libRef&&b.active!==false).map(b=>b.libRef));
+  const inUseInactive = new Set(barriers.filter(b=>b.libRef&&b.active===false).map(b=>b.libRef));
+
+  const sortedItems = Object.keys(_qapSelected)
+    .map(libId => BARRIER_LIBRARY.find(x=>x.id===libId))
+    .filter(Boolean)
+    .sort((a,b)=>a.layer-b.layer);
+
+  let added=0, reactivated=0;
+  sortedItems.forEach(item => {
+    const condKey = _qapSelected[item.id].condKey;
+    const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+    const condEntry = condTable.find(x=>x.key===condKey)||condTable[0];
+    const finalR = parseFloat(Math.min(item.rNom*condEntry.mult,item.rMax).toFixed(3));
+
+    if(inUseActive.has(item.id)) return;
+
+    if(inUseInactive.has(item.id)) {
+      // Reactivate
+      const existing = barriers.find(b=>b.libRef===item.id&&b.active===false);
+      if(existing) {
+        existing.active = true;
+        if(col!=='bike') existing.fut[col] = finalR;
+        existing._futModified = true;
+        reactivated++;
+      }
+    } else {
+      // Create new
+      const futMap = {ped:0,veh:0,bike:null,trk:0,pi:0};
+      item.hazardGroups.forEach(g => { if(g!=='bike') futMap[g]=finalR; });
+      const newB = {
+        id: 'bqap_'+Date.now()+'_'+item.id,
+        name: item.name,
+        isNew: true, active: true,
+        layer: item.layer,
+        libRef: item.id,
+        libCondKey: condKey,
+        libRNom: item.rNom,
+        libCondType: item.condType,
+        desc: `${LAYER_NAMES[item.layer]} — ${condEntry.label} (×${condEntry.mult}) — r = ${finalR}`,
+        cur:  {ped:0,veh:0,bike:null,trk:0,pi:0},
+        fut:  {...futMap},
+        curDesc:{}, futDesc:{},
+      };
+      insertBarrierSorted(newB);
+      added++;
+    }
+  });
+
+  saveLS('barriers', barriers);
+  renderTable(); calc(); renderLibTable();
+  closeQAP();
+
+  const msg = [added>0?`${added} barrier${added>1?'s':''} added`:'', reactivated>0?`${reactivated} reactivated`:''].filter(Boolean).join(', ');
+  showToast(msg || 'No changes made.');
+  _qapSelected = {};
+}
+
+function scrollToBarrierRow(libId) {
+  const b = barriers.find(x=>x.libRef===libId&&x.active!==false);
+  if(!b) return;
+  const row = $(`brow_${b.id}`);
+  if(row) { row.scrollIntoView({behavior:'smooth',block:'center'}); row.style.outline='2px solid #f0a000'; setTimeout(()=>row.style.outline='',2000); }
+  closeQAP();
+}
+
+// ══════════════════════════════════════════════════════════
+// LIBRARY PANEL
+// ══════════════════════════════════════════════════════════
+function setLibLayer(layer, btn) {
+  libLayer = layer;
+  document.querySelectorAll('.lib-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderLibTable();
+}
+
+function renderLibTable() {
+  const tbody = $('lib-tbody'); if(!tbody) return;
+  const inUseActive   = new Set(barriers.filter(b=>b.libRef&&b.active!==false).map(b=>b.libRef));
+  const inUseInactive = new Set(barriers.filter(b=>b.libRef&&b.active===false).map(b=>b.libRef));
+
+  const search = ($('lib-search')||{}).value||'';
+  const hazFilter = {
+    ped:  $('lf_ped')  ? $('lf_ped').checked  : true,
+    veh:  $('lf_veh')  ? $('lf_veh').checked  : true,
+    bike: $('lf_bike') ? $('lf_bike').checked : true,
+    trk:  $('lf_trk')  ? $('lf_trk').checked  : true,
+    pi:   $('lf_pi')   ? $('lf_pi').checked   : true,
+  };
+  const activeHaz = Object.entries(hazFilter).filter(([k,v])=>v).map(([k])=>k);
+
+  const filtered = BARRIER_LIBRARY.filter(item => {
+    if(libLayer && item.layer!==libLayer) return false;
+    if(search && !item.name.toLowerCase().includes(search.toLowerCase()) && !item.id.toLowerCase().includes(search.toLowerCase())) return false;
+    if(activeHaz.length>0 && !item.hazardGroups.some(g=>activeHaz.includes(g))) return false;
+    return true;
+  });
+
+  let html = '';
+  filtered.forEach(item => {
+    const isActive  = inUseActive.has(item.id);
+    const isPaused  = inUseInactive.has(item.id);
+    const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+    const selKey    = (libSelected[item.id]&&libSelected[item.id].condKey)||condTable[0].key;
+    const condEntry = condTable.find(x=>x.key===selKey)||condTable[0];
+    const finalR    = parseFloat(Math.min(item.rNom*condEntry.mult,item.rMax).toFixed(3));
+    const condOpts  = condTable.map(ce=>
+      `<option value="${ce.key}" ${ce.key===selKey?'selected':''}>${ce.label}</option>`
+    ).join('');
+    const applies   = item.hazardGroups.map(g=>COL_LABELS[g]||g).join(', ');
+    const checked   = libSelected[item.id]?'checked':'';
+    const disabled  = isActive ? 'disabled' : '';
+    const statusBadge = isActive
+      ? `<span class="lib-in-use-badge">✓ In use</span> <button class="scroll-btn" onclick="scrollToBarrierRow('${item.id}')">↑ table</button>`
+      : isPaused
+        ? `<span class="lib-paused-badge">⏸ Paused</span>`
+        : '';
+
+    html += `<tr id="librow_${item.id}">
+      <td><input type="checkbox" ${checked} ${disabled} onchange="onLibCheck('${item.id}',this.checked)"></td>
+      <td>${layerBadge(item.layer)}</td>
+      <td class="lib-name-cell">${item.name} <span style="font-size:9px;color:#aaa;">${item.id}</span></td>
+      <td style="font-size:10px;">${applies}</td>
+      <td style="text-align:center;">${item.rMin}</td>
+      <td style="text-align:center;">${item.rNom}</td>
+      <td style="text-align:center;">${item.rMax}</td>
+      <td style="font-size:10px;min-width:130px;">${item.condSens}</td>
+      <td>${isActive?`<select disabled>${condOpts}</select>`:`<select id="libcondsel_${item.id}" onchange="onLibCondChange('${item.id}',this.value)">${condOpts}</select>`}</td>
+      <td style="text-align:center;">${condEntry.mult}</td>
+      <td style="text-align:center;font-family:'Courier New',monospace;font-weight:700;" id="libr_${item.id}">${finalR}</td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  });
+
+  if(!html) html='<tr><td colspan="12" style="text-align:center;color:#888;padding:12px;">No barriers match the current filter.</td></tr>';
+  tbody.innerHTML = html;
+  updateLibSelCount();
+}
+
+function onLibCheck(libId, checked) {
+  const item = BARRIER_LIBRARY.find(x=>x.id===libId); if(!item) return;
+  const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+  const selEl = $(`libcondsel_${libId}`);
+  const condKey = selEl ? selEl.value : condTable[0].key;
+  if(checked) libSelected[libId]={condKey};
+  else delete libSelected[libId];
+  updateLibSelCount();
+}
+
+function onLibCondChange(libId, condKey) {
+  const item = BARRIER_LIBRARY.find(x=>x.id===libId); if(!item) return;
+  const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+  const condEntry = condTable.find(x=>x.key===condKey)||condTable[0];
+  const finalR = parseFloat(Math.min(item.rNom*condEntry.mult,item.rMax).toFixed(3));
+  const rEl = $(`libr_${libId}`); if(rEl) rEl.textContent=finalR;
+  // Auto-select on condition change
+  const chk = document.querySelector(`#librow_${libId} input[type=checkbox]`);
+  if(chk && !chk.checked && !chk.disabled) { chk.checked=true; }
+  libSelected[libId]={condKey};
+  updateLibSelCount();
+}
+
+function updateLibSelCount() {
+  const count = Object.keys(libSelected).length;
+  const el=$('lib-sel-count'); if(el) el.textContent=count+' selected';
+  const btn=$('lib-add-btn'); if(btn) btn.disabled=count===0;
+}
+
+function addLibraryBarriers() {
+  const inUseActive  = new Set(barriers.filter(b=>b.libRef&&b.active!==false).map(b=>b.libRef));
+  const inUseInactive= new Set(barriers.filter(b=>b.libRef&&b.active===false).map(b=>b.libRef));
+
+  const sortedItems = Object.keys(libSelected)
+    .map(lid => BARRIER_LIBRARY.find(x=>x.id===lid))
+    .filter(Boolean)
+    .sort((a,b)=>a.layer-b.layer);
+
+  let added=0, reactivated=0;
+  sortedItems.forEach(item => {
+    const condKey = libSelected[item.id].condKey;
+    const condTable = COND_TABLES[item.condType]||COND_TABLES.standard;
+    const condEntry = condTable.find(x=>x.key===condKey)||condTable[0];
+    const finalR = parseFloat(Math.min(item.rNom*condEntry.mult,item.rMax).toFixed(3));
+
+    if(inUseActive.has(item.id)) return;
+
+    if(inUseInactive.has(item.id)) {
+      const existing = barriers.find(b=>b.libRef===item.id&&b.active===false);
+      if(existing) { existing.active=true; existing._futModified=true; reactivated++; }
+    } else {
+      const futMap = {ped:0,veh:0,bike:null,trk:0,pi:0};
+      item.hazardGroups.forEach(g=>{ if(g!=='bike') futMap[g]=finalR; });
+      const newB = {
+        id: 'blib_'+Date.now()+'_'+item.id,
+        name: item.name,
+        isNew:true, active:true,
+        layer: item.layer,
+        libRef: item.id,
+        libCondKey: condKey,
+        libRNom: item.rNom,
+        libCondType: item.condType,
+        desc: `${LAYER_NAMES[item.layer]} — ${condEntry.label} (×${condEntry.mult}) — r = ${finalR}`,
+        cur:  {ped:0,veh:0,bike:null,trk:0,pi:0},
+        fut:  {...futMap},
+        curDesc:{}, futDesc:{},
+      };
+      insertBarrierSorted(newB);
+      added++;
+    }
+  });
+
+  libSelected={};
+  updateLibSelCount();
+  saveLS('barriers',barriers);
+  renderTable(); calc(); renderLibTable();
+
+  const msg=[added>0?`${added} barrier${added>1?'s':''} added`:'', reactivated>0?`${reactivated} reactivated`:''].filter(Boolean).join(', ');
+  showToast(msg||'No changes made.');
+}
+
+// ══════════════════════════════════════════════════════════
+// HAZARD TEMPLATE EDITOR
+// ══════════════════════════════════════════════════════════
+let editingHazCol = null;
+function openHazEdit(col) {
+  editingHazCol = col;
+  const ht = hazTemplates[col] || DEFAULT_HAZ[col];
+  $('haz-edit-title').textContent = 'Edit Hazard Template — ' + ht.name;
+  $('he-name').value  = ht.name;
+  $('he-s').value     = ht.s;
+  $('he-falarp').value= ht.falarp;
+  $('he-tmethod').value = ht.tmethod;
+  $('he-notes').value = ht.notes||'';
+  $('haz-edit-panel').style.display = 'block';
+}
+function closeHazEdit() { $('haz-edit-panel').style.display='none'; editingHazCol=null; }
+function saveHazTemplate() {
+  if(!editingHazCol) return;
+  const ht = {
+    name:    $('he-name').value||hazTemplates[editingHazCol].name,
+    s:       parseFloat($('he-s').value)||hazTemplates[editingHazCol].s,
+    falarp:  parseFloat($('he-falarp').value)||hazTemplates[editingHazCol].falarp,
+    tmethod: $('he-tmethod').value,
+    notes:   $('he-notes').value,
+  };
+  hazTemplates[editingHazCol] = ht;
+  saveLS('hazTemplates', hazTemplates);
+  const hdrEl = document.querySelector(`[onclick="openHazEdit('${editingHazCol}')"]`);
+  if(hdrEl) hdrEl.parentElement.childNodes[0].textContent = ht.name + ' ';
+  const faEl = $(`cFA_${editingHazCol}`);
+  if(faEl) { faEl.value = ht.falarp; }
+  closeHazEdit();
+  calc();
+}
+
+// ══════════════════════════════════════════════════════════
+// MAIN CALCULATION
+// ══════════════════════════════════════════════════════════
+function calc() {
+  // ── Input validation ──
+  ['pInc','pNM','vInc','vNM','bInc','bNM','vIntr','piInc','piNM','svcOW','revHrs','minExp','darkHrs','dataYrs'].forEach(validateNonNeg);
+  validateBounded('trkPct',0,1);
+  COLS.forEach(c => {
+    validateBounded(`cP_${c}`,0,1);
+    validateBounded(`cS_${c}`,0,10);
+    validateNonNeg(`cE_${c}`);
+    validateNonNeg(`cFA_${c}`);
+  });
+
+  const yrs    = n('dataYrs')||3;
+  const svcOW  = n('svcOW');
+  const revHrs = n('revHrs');
+  const minExp = n('minExp');
+  const trkPct = n('trkPct');
+  const darkHrs= n('darkHrs');
+
+  const pI=n('pInc'), pN=n('pNM');
+  const vI=n('vInc'), vN=n('vNM');
+  const bI=n('bInc'), bN=n('bNM');
+  const vX=n('vIntr');
+  const piI=n('piInc'), piN=n('piNM');
+
+  lastInputs = {yrs,svcOW,revHrs,minExp,trkPct,darkHrs,pI,pN,vI,vN,bI,bN,vX,piI,piN};
+
+  setSpan('pTot',  pI+pN,  0); setSpan('vTot', vI+vN,  0); setSpan('bTot', bI+bN,  0);
+  setSpan('piTot', piI+piN,0);
+  setSpan('tInc',  pI+vI+bI+piI,   0);
+  setSpan('tNM',   pN+vN+bN+piN,   0);
+  setSpan('tIntr', vX,              0);
+  setSpan('tTot',  (pI+pN)+(vI+vN)+(bI+bN)+(piI+piN), 0);
+
+  const Tcol  = svcOW * revHrs * 2 * minExp / 60;
+  const Tintr = trkPct * darkHrs;
+
+  const Fp   = (pI+pN)/yrs;
+  const Fv   = (vI+vN)/yrs;
+  const Fb   = (bI+bN)/yrs;
+  const Ftrk = vX/yrs;
+  const Fpi  = (piI+piN)/yrs;
+
+  setSpan('pF', Fp,4);   setSpan('pT', Tcol,4);
+  setSpan('vF', Fv,4);   setSpan('vT', Tcol,4);
+  setSpan('bF', Fb,4);   setSpan('bT', Tcol,4);
+  setSpan('trkF',Ftrk,4);setSpan('trkT',Tintr,4);
+  setSpan('piF', Fpi,4); setSpan('piT', Tintr,4);
+
+  const Fs = {ped:Fp, veh:Fv, bike:Fb, trk:Ftrk, pi:Fpi};
+  const Ts = {ped:Tcol, veh:Tcol, bike:Tcol, trk:Tintr, pi:Tintr};
+
+  COLS.forEach(c => {
+    const fEl = $(`cF_${c}`); if(fEl) fEl.textContent = Fs[c].toFixed(4);
+    const tEl = $(`cT_${c}`); if(tEl) tEl.textContent = Ts[c].toFixed(4);
+    const ffEl = $(`fF_${c}`); if(ffEl) ffEl.textContent = Fs[c].toFixed(4);
+    const ftEl = $(`fT_${c}`); if(ftEl) ftEl.textContent = Ts[c].toFixed(4);
+  });
+
+  // ── Barrier aggregation — skips inactive ──
+  function colBarriers(side) {
+    const result = {ped:[],veh:[],bike:[],trk:[],pi:[]};
+    barriers.forEach(b => {
+      if(b.active === false) return;  // excluded from SRS
+      COLS.forEach(c => {
+        if(c==='bike') return;  // bike handled separately in SRS block
+        const val = side==='cur'
+          ? (b.cur[c]||0)
+          : (b.fut[c]!=null ? b.fut[c] : b.cur[c]||0);
+        result[c].push(val);
+      });
+    });
+    return result;
+  }
+
+  // Collect manual bike r-values per side (only barriers in manual mode)
+  function manualBikeRs(side) {
+    const rs = [];
+    barriers.forEach(b => {
+      if(b.active === false) return;
+      if((bikeModes[b.id]||'auto') !== 'manual') return;
+      const val = side==='cur'
+        ? (b.cur['bike'] != null ? b.cur['bike'] : 0)
+        : (b.fut['bike'] != null ? b.fut['bike'] : (b.cur['bike'] != null ? b.cur['bike'] : 0));
+      rs.push(val);
+    });
+    return rs;
+  }
+
+  const cBars = colBarriers('cur');
+  const fBars = colBarriers('fut');
+
+  const cManualBike = manualBikeRs('cur');
+  const fManualBike = manualBikeRs('fut');
+
+  // Compute bike SRS for one side:
+  // Auto base = MIN(SRS_ped, SRS_veh) × 0.9 from all active barriers
+  // Then combine with any manual bike r-values as additional independent barriers
+  function bikeSRS(pedBars, vehBars, manualRs) {
+    const autoBase = Math.min(srsOf(pedBars), srsOf(vehBars)) * 0.9;
+    if(manualRs.length === 0) return autoBase;
+    // Combine: treat autoBase as one barrier and manual entries as additional independent barriers
+    // SRS_combined = 1 - (1 - autoBase) * ∏(1 - manualR)
+    let p = 1 - autoBase;
+    manualRs.forEach(r => { p *= (1 - Math.min(Math.max(r||0,0),1)); });
+    return 1 - p;
+  }
+
+  const cSRS = {};
+  const fSRS = {};
+  let highSRS = false;
+
+  COLS.forEach(c => {
+    if(c==='bike') {
+      cSRS.bike = Math.min(bikeSRS(cBars.ped, cBars.veh, cManualBike), 0.999);
+      fSRS.bike = Math.min(bikeSRS(fBars.ped, fBars.veh, fManualBike), 0.999);
+    } else {
+      cSRS[c] = Math.min(srsOf(cBars[c]), 0.999);  // cap at 0.999
+      fSRS[c] = Math.min(srsOf(fBars[c]), 0.999);
+    }
+    if(cSRS[c]>0.99||fSRS[c]>0.99) highSRS=true;
+    setSpan(`cSRS_${c}`, cSRS[c]);
+    setSpan(`fSRS_${c}`, fSRS[c]);
+  });
+
+  // High-SRS warning
+  const warnEl = $('srs-warn-high');
+  if(warnEl) warnEl.classList.toggle('show', highSRS);
+
+  lastResults = {};
+
+  COLS.forEach(c => {
+    const cS  = n(`cS_${c}`),  cP = n(`cP_${c}`),  cE = n(`cE_${c}`),  cFA = n(`cFA_${c}`);
+    const fS  = n(`fS_${c}`),  fP = n(`fP_${c}`),  fE = n(`fE_${c}`),  fFA = n(`fFA_${c}`);
+    const F   = Fs[c], T = Ts[c];
+
+    const RHC1 = cS*cP*F*cE*T/8;
+    setSpan(`cRHC_${c}`, RHC1);
+
+    // SRS capped — PHC division now always safe
+    const PHC  = RHC1/(1-cSRS[c]);
+    setSpan(`cPHC_${c}`, PHC);
+
+    const AHC_c = cS*cP*cFA*cE*T/8;
+    setSpan(`cAHC_${c}`, AHC_c);
+    setSpan(`cUCHC_${c}`, Math.max(RHC1-AHC_c,0));
+    const Sp1  = 1-RHC1/PHC;
+    const SpA_c= 1-AHC_c/PHC;
+    setPct(`cSp_${c}`, Sp1);
+    setPct(`cSpA_${c}`, SpA_c);
+    setPct(`cGap_${c}`, Math.max(SpA_c-Sp1,0));
+    setPct(`cSpImp_${c}`, NaN);
+    setPct(`cClose_${c}`, NaN);
+    setAlarp(`alarp_c_${c}`, Sp1, SpA_c);
+
+    const RHC2  = PHC*(1-fSRS[c]);
+    const AHC_f = fS*fP*fFA*fE*T/8;
+    const Sp2   = 1-RHC2/PHC;
+    const SpA_f = 1-AHC_f/PHC;
+    const imp   = Sp2-Sp1;
+    const gapC  = Math.max(SpA_c-Sp1, 0.00001);
+    const closure = imp/gapC;
+    const remGap  = Math.max(SpA_f-Sp2, 0);
+
+    setSpan(`fRHC2_${c}`, RHC2);
+    setSpan(`fRHC2b_${c}`, RHC2);
+    setSpan(`fAHC_${c}`, AHC_f);
+    setSpan(`fUCHC_${c}`, Math.max(RHC2-AHC_f,0));
+    setPct(`fSp_${c}`, Sp2);
+    setPct(`fSpA_${c}`, SpA_f);
+    setPct(`fGap_${c}`, remGap);
+    setPct(`fSpImp_${c}`, imp);
+    setPct(`fClose_${c}`, closure);
+    setAlarp(`alarp_f_${c}`, Sp2, SpA_f);
+
+    const m = (n('alarp-margin')||10)/100;
+    const statusLabel = (sp, spa) => {
+      if(!isFinite(sp)||isNaN(sp)) return 'undetermined';
+      if(sp>=spa) return 'ALARP demonstrated';
+      if((spa-sp)<=m) return 'margin band — monitor';
+      return 'needs enhancement';
+    };
+
+    lastResults[c] = {
+      cS,cP,cE,cFA, fS,fP,fE,fFA, F,T,
+      RHC1, PHC, AHC_c, Sp1, SpA_c, gapC:SpA_c-Sp1,
+      cSRS:cSRS[c], fSRS:fSRS[c], RHC2, AHC_f, Sp2, SpA_f,
+      imp, closure, remGap,
+      cStatus: statusLabel(Sp1,SpA_c),
+      fStatus: statusLabel(Sp2,SpA_f),
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// REPORT GENERATION
+// ══════════════════════════════════════════════════════════
+function pctStr(v) { return (!isFinite(v)||isNaN(v)) ? 'N/A' : (v*100).toFixed(1)+'%'; }
+function numStr(v,d=3) { return (!isFinite(v)||isNaN(v)) ? 'N/A' : v.toFixed(d); }
+
+function hazLabel(c) {
+  return {ped:'Train versus Pedestrian Collision', veh:'Train versus Vehicle Collision',
+          bike:'Train versus Bike Rider Collision', trk:'Vehicle Track Intrusion',
+          pi:'Pedestrian Track Intrusion'}[c];
+}
+function grpLabel(c) {
+  return {ped:'pedestrians',veh:'vehicle occupants',bike:'bike riders',
+          trk:'vehicles entering the track zone',pi:'pedestrians entering the track zone'}[c];
+}
+function incSentence(c) {
+  const li = lastInputs;
+  if(c==='ped')  return `${li.pI} reported incident${li.pI!==1?'s':''} and ${li.pN} near-miss event${li.pN!==1?'es':''}`;
+  if(c==='veh')  return `${li.vI} reported incident${li.vI!==1?'s':''} and ${li.vN} near-miss event${li.vN!==1?'es':''}`;
+  if(c==='bike') return `${li.bI} reported incident${li.bI!==1?'s':''} and ${li.bN} near-miss event${li.bN!==1?'es':''}`;
+  if(c==='trk')  return `${li.vX} observed vehicle track intrusion event${li.vX!==1?'s':''}`;
+  if(c==='pi')   return `${li.piI} reported incident${li.piI!==1?'s':''} and ${li.piN} near-miss event${li.piN!==1?'es':''}`;
+  return '';
+}
+
+function getBarrierInfo(col, side) {
+  const result = [];
+  barriers.forEach(b => {
+    if(b.active === false) return;  // skip inactive
+    if(col==='bike') return;
+    const val = side==='cur' ? (b.cur[col]||0) : (b.fut[col]!=null ? b.fut[col] : b.cur[col]||0);
+    if(val>0) {
+      const desc = side==='cur' ? (b.curDesc&&b.curDesc[col]) : (b.futDesc&&b.futDesc[col]);
+      result.push({name:b.name, r:val, desc:desc||'', isNew:b.isNew, generalDesc:b.desc||'', layer:b.layer});
+    }
+  });
+  return result;
+}
+
+// ── Recommended actions (Feature 10) ──
+function recommendedActions(col, r) {
+  const allBars = [...getBarrierInfo(col,'cur'), ...getBarrierInfo(col,'fut')];
+  const hasL1 = allBars.some(b => b.layer === 1);
+  const hasL2 = allBars.some(b => b.layer === 2);
+  const actions = [];
+
+  if(r.fStatus === 'ALARP demonstrated') {
+    actions.push({priority:'Routine', action:'Maintain and inspect existing controls per schedule', type:'Monitoring', gain:'—', notes:'Annual review recommended'});
+
+  } else if(r.fStatus === 'margin band — monitor') {
+    actions.push({priority:'Low', action:'Increase inspection frequency for existing barriers', type:'Monitoring', gain:'<5% Sp', notes:'Margin borderline — document and monitor'});
+    if(!hasL2) actions.push({priority:'Medium', action:'Evaluate detection / active-response layer addition', type:'Layer 2 upgrade', gain:'5–15% Sp', notes:'E.g. obstacle detection or cab signalling'});
+
+  } else {
+    // Needs enhancement — hierarchy: L1 first, then L2, then L4
+    if(!hasL1) {
+      actions.push({priority:'High', action:'Implement foundational system control (signal interlock or grade separation)', type:'Layer 1 — Foundational', gain:'15–30% Sp', notes:'Highest impact; addresses root exposure window'});
+    } else if(!hasL2) {
+      actions.push({priority:'High', action:'Add active detection or response layer', type:'Layer 2 — Detection', gain:'10–20% Sp', notes:'Complements existing foundational controls'});
+    }
+    actions.push({priority:'Medium', action:'Review human-dependent barriers: training and monitoring programs', type:'Layer 4 — Human', gain:'3–8% Sp', notes:'Low cost; high compliance dependency'});
+    if(r.remGap > 0.15) {
+      actions.push({priority:'High', action:'Reassess ALARP F-target — infrastructure change may be required', type:'Target review', gain:'N/A', notes:'Escalate to agency safety officer'});
+    }
+  }
+  return actions;
+}
+
+function generateReport() {
+  calc();
+  const loc     = $('loc').value||'the assessed crossing';
+  const analyst = $('rpt-analyst').value||'the assigned analyst';
+  const agency  = $('rpt-agency').value||'the agency';
+  const ref     = $('rpt-ref').value||'—';
+  const dateRaw = $('rpt-date').value;
+  const dateStr = dateRaw
+    ? new Date(dateRaw+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})
+    : new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const margin  = Math.round((n('alarp-margin')||10));
+  const li = lastInputs;
+
+  // Reassessment date based on FUTURE status (Sp₂), not current
+  const reDate = new Date(dateRaw ? dateRaw+'T12:00:00' : new Date());
+  const needsCols  = COLS.filter(c=>lastResults[c]&&lastResults[c].fStatus==='needs enhancement');
+  const marginCols = COLS.filter(c=>lastResults[c]&&lastResults[c].fStatus==='margin band — monitor');
+  reDate.setFullYear(reDate.getFullYear()+(needsCols.length>0?1:marginCols.length>0?2:3));
+  const reDateStr = reDate.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  const totalInc  = li.pI+li.vI+li.bI+li.piI;
+  const totalNM   = li.pN+li.vN+li.bN+li.piN;
+  const totalIntr = li.vX;
+
+  let html = `
+  <div style="text-align:center;border-bottom:2px solid #1f3864;padding-bottom:18px;margin-bottom:24px;">
+    <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:4px;">${agency}</div>
+    <div style="font-size:20px;font-weight:700;color:#1f3864;margin-bottom:3px;">Safety Performance Assessment Report — Action Plan</div>
+    <div style="font-size:14px;color:#444;margin-bottom:8px;">${loc}</div>
+    <div style="font-size:11px;color:#888;display:flex;justify-content:center;gap:28px;flex-wrap:wrap;">
+      <span><strong>Date:</strong> ${dateStr}</span>
+      <span><strong>Prepared by:</strong> ${analyst}</span>
+      <span><strong>Reference:</strong> ${ref}</span>
+      <span><strong>Observation period:</strong> ${li.yrs} years</span>
+      <span><strong>Recommended reassessment:</strong> ${reDateStr}</span>
+    </div>
+  </div>
+
+  <div style="font-size:15px;font-weight:700;color:#1f3864;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:14px;">Status Overview</div>
+  <div style="overflow-x:auto;margin-bottom:22px;">
+  <table style="width:100%;border-collapse:collapse;font-size:11px;">
+    <tr style="background:#1f3864;color:#fff;">
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;text-align:left;">Hazard</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">F/yr</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">SRS (cur → fut)</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">Sp cur</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">Sp fut</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">ALARP target</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">Gap remaining</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">Gap closed</th>
+      <th style="padding:4px 8px;border:1px solid #2a4a8c;">Status</th>
+    </tr>`;
+
+  COLS.forEach((c,i) => {
+    const r = lastResults[c]; if(!r) return;
+    const bg = i%2===0?'':'background:#f5f7fb;';
+    const statusColor = r.fStatus==='ALARP demonstrated'?'#375623':r.fStatus==='margin band — monitor'?'#856404':'#9c0006';
+    const statusBg    = r.fStatus==='ALARP demonstrated'?'#c6efce':r.fStatus==='margin band — monitor'?'#fff3cd':'#ffc7ce';
+    html+=`<tr style="${bg}">
+      <td style="padding:3px 7px;border:1px solid #ccc;font-weight:600;">${hazLabel(c)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.F,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;white-space:nowrap;">${pctStr(r.cSRS)} → ${pctStr(r.fSRS)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;font-weight:700;">${pctStr(r.Sp1)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;font-weight:700;">${pctStr(r.Sp2)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.SpA_f)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.remGap)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.closure)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;font-weight:700;color:${statusColor};background:${statusBg};">${r.fStatus}</td>
+    </tr>`;
+  });
+  html += `</table></div>
+
+  <div style="font-size:15px;font-weight:700;color:#1f3864;border-bottom:1px solid #ccc;padding-bottom:5px;margin-bottom:14px;">Per-Hazard Action Plan</div>`;
+
+  COLS.forEach((c,idx) => {
+    const r = lastResults[c]; if(!r) return;
+    const cBarsInfo = getBarrierInfo(c,'cur');
+    const fBarsInfo = getBarrierInfo(c,'fut');
+    const newBars   = fBarsInfo.filter(b=>b.isNew);
+
+    const statusColor = r.fStatus==='ALARP demonstrated'?'#375623':r.fStatus==='margin band — monitor'?'#856404':'#9c0006';
+    const statusBg    = r.fStatus==='ALARP demonstrated'?'#c6efce':r.fStatus==='margin band — monitor'?'#fff3cd':'#ffc7ce';
+
+    const cBarStr = cBarsInfo.length
+      ? cBarsInfo.map(b => {
+          const parts = [`<em>${b.name}</em> (r=${pctStr(b.r)})`];
+          if(b.desc) parts.push(`<span style="color:#555;">"${b.desc}"</span>`);
+          return parts.join(' — ');
+        }).join('; ')
+      : 'none recorded';
+    const newBarStr = newBars.length
+      ? newBars.map(b => {
+          const parts = [`<em>${b.name}</em> (r=${pctStr(b.r)})`];
+          if(b.generalDesc) parts.push(`<span style="color:#555;">${b.generalDesc}</span>`);
+          if(b.desc) parts.push(`<span style="color:#777;font-style:italic;">"${b.desc}"</span>`);
+          return parts.join(' — ');
+        }).join('; ')
+      : 'none proposed';
+
+    // Narrative interpretation
+    const spInterpret = r.Sp1 >= 0.9
+      ? 'This is a strong safety performance level, indicating that existing controls are absorbing a high proportion of the potential hazard.'
+      : r.Sp1 >= 0.7
+        ? 'This reflects a moderate level of hazard control. Existing barriers are meaningful but the residual risk remains material.'
+        : 'This is a low safety performance level, meaning a substantial fraction of the potential hazard is uncontrolled by current barriers.';
+    const srsInterpret = r.cSRS >= 0.8
+      ? `The combined reliability of ${pctStr(r.cSRS)} indicates that existing barriers together provide a high probability of intercepting an escalating event.`
+      : r.cSRS >= 0.5
+        ? `The combined reliability of ${pctStr(r.cSRS)} suggests that current barriers collectively intercept roughly half or more of credible escalation paths, but meaningful gaps remain.`
+        : `The combined reliability of ${pctStr(r.cSRS)} is low, indicating that most escalation pathways are not effectively controlled by current barriers.`;
+    const futInterpret = r.imp > 0
+      ? `The proposed improvements raise Sp from ${pctStr(r.Sp1)} to ${pctStr(r.Sp2)}, a gain of ${pctStr(r.imp)}. Gap closure achieves ${pctStr(r.closure)} of the required improvement.`
+      : `No improvement in safety performance is projected from the future condition as currently configured.`;
+    const remGapSentence = r.remGap > 0.001
+      ? `A residual performance gap of ${pctStr(r.remGap)} will remain and requires further action before the ALARP target of ${pctStr(r.SpA_f)} is demonstrated.`
+      : `The proposed future condition is projected to fully meet or exceed the ALARP target — no residual gap remains.`;
+
+    const actions = recommendedActions(c, r);
+    const actRows = actions.map((a,i) => {
+      const priBg = a.priority==='High'?'#ffc7ce':a.priority==='Medium'?'#fff3cd':'#e2efda';
+      return `<tr style="${i%2===0?'':'background:#f9f9f9'}">
+        <td style="padding:3px 7px;border:1px solid #ddd;background:${priBg};font-weight:700;font-size:10px;">${a.priority}</td>
+        <td style="padding:3px 7px;border:1px solid #ddd;">${a.action}</td>
+        <td style="padding:3px 7px;border:1px solid #ddd;font-size:10px;">${a.type}</td>
+        <td style="padding:3px 7px;border:1px solid #ddd;text-align:center;font-size:10px;">${a.gain}</td>
+        <td style="padding:3px 7px;border:1px solid #ddd;font-size:10px;">${a.notes}</td>
+      </tr>`;
+    }).join('');
+
+    html += `
+  <div style="margin-bottom:20px;border:1px solid #dde4ef;border-radius:4px;overflow:hidden;">
+    <div style="padding:8px 14px;background:${statusBg};display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <strong style="color:${statusColor};font-size:13px;">${idx+1}. ${hazLabel(c)}</strong>
+      <span style="font-size:11px;">Sp cur: <strong>${pctStr(r.Sp1)}</strong></span>
+      <span style="font-size:11px;">Sp fut: <strong>${pctStr(r.Sp2)}</strong></span>
+      <span style="font-size:11px;">ALARP target: <strong>${pctStr(r.SpA_f)}</strong></span>
+      <span style="font-size:11px;">Gap remaining: <strong>${pctStr(r.remGap)}</strong></span>
+      <span style="font-size:11px;color:${statusColor};font-weight:700;">${r.fStatus}</span>
+    </div>
+    <div style="padding:10px 14px;font-size:11px;border-bottom:1px solid #eee;line-height:1.75;">
+      <p style="margin-bottom:6px;"><strong>Current condition.</strong> The annual event frequency is <strong>${numStr(r.F,4)} events/yr</strong>, giving a Residual Hazard Cloud of <strong>${numStr(r.RHC1,4)} HazPoC/shift</strong> against a Potential Hazard Cloud of <strong>${numStr(r.PHC,4)} HazPoC/shift</strong>. Current safety performance is <strong>${pctStr(r.Sp1)}</strong>. ${spInterpret} ${srsInterpret}</p>
+      <p style="margin-bottom:6px;"><strong>Current barriers:</strong> ${cBarStr}</p>
+      <p style="margin-bottom:6px;"><strong>Future outlook.</strong> ${futInterpret} ${remGapSentence}</p>
+      <p><strong>Proposed new barriers:</strong> ${newBarStr}</p>
+    </div>
+    <div style="padding:8px 14px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#555;margin-bottom:5px;">Recommended Actions</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <tr style="background:#f0f4fa;">
+          <th style="padding:3px 7px;border:1px solid #ccc;width:70px;">Priority</th>
+          <th style="padding:3px 7px;border:1px solid #ccc;">Action</th>
+          <th style="padding:3px 7px;border:1px solid #ccc;width:140px;">Type</th>
+          <th style="padding:3px 7px;border:1px solid #ccc;width:70px;">Sp gain</th>
+          <th style="padding:3px 7px;border:1px solid #ccc;">Notes</th>
+        </tr>
+        ${actRows}
+      </table>
+    </div>
+  </div>`;
+  });
+
+  // ── Technical Appendix ──
+  html += `
+  <div style="font-size:15px;font-weight:700;color:#1f3864;border-bottom:1px solid #ccc;padding-bottom:5px;margin:28px 0 16px;">Technical Appendix — Assumptions and Calculations</div>
+
+  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.05em;">A. Global Assumptions</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;">
+    <tr style="background:#f0f4fa;"><th style="padding:5px 9px;text-align:left;border:1px solid #ccc;">Parameter</th><th style="padding:5px 9px;border:1px solid #ccc;text-align:left;">Value</th><th style="padding:5px 9px;border:1px solid #ccc;text-align:left;">Basis</th></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">Observation period</td><td style="padding:4px 9px;border:1px solid #ccc;">${li.yrs} years</td><td style="padding:4px 9px;border:1px solid #ccc;">F = (Inc + NM) ÷ period</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">Shift normalisation</td><td style="padding:4px 9px;border:1px solid #ccc;">8 hours</td><td style="padding:4px 9px;border:1px solid #ccc;">HazPoC per 8-hour shift</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">T collision</td><td style="padding:4px 9px;border:1px solid #ccc;">${numStr(li.svcOW*li.revHrs*2*li.minExp/60,4)} hrs</td><td style="padding:4px 9px;border:1px solid #ccc;">svc(${li.svcOW}) × revHrs(${li.revHrs}) × 2 directions × minExp(${li.minExp}) ÷ 60</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">T track intrusion</td><td style="padding:4px 9px;border:1px solid #ccc;">${numStr(li.trkPct*li.darkHrs,4)} hrs</td><td style="padding:4px 9px;border:1px solid #ccc;">trkPct(${(li.trkPct*100).toFixed(1)}%) × darkHrs(${li.darkHrs})</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">ALARP acceptance margin</td><td style="padding:4px 9px;border:1px solid #ccc;">${margin}%</td><td style="padding:4px 9px;border:1px solid #ccc;">Applied in Sp space: gap ≤ margin → margin band</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">Bike SRS rule</td><td style="padding:4px 9px;border:1px solid #ccc;">MIN(Ped,Veh)×0.9</td><td style="padding:4px 9px;border:1px solid #ccc;">Conservative — mixed pathway behaviour</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">SRS cap</td><td style="padding:4px 9px;border:1px solid #ccc;">0.999</td><td style="padding:4px 9px;border:1px solid #ccc;">Prevents PHC division by zero or near-zero denominator</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">Recommended reassessment</td><td style="padding:4px 9px;border:1px solid #ccc;">${reDateStr}</td><td style="padding:4px 9px;border:1px solid #ccc;">Based on future (Sp₂) status: 1 yr if needs enhancement, 2 yr if margin band, 3 yr if ALARP demonstrated</td></tr>
+  </table>
+
+  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.05em;">B. Formulae</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;">
+    <tr style="background:#f0f4fa;"><th style="padding:5px 9px;text-align:left;border:1px solid #ccc;">Variable</th><th style="padding:5px 9px;border:1px solid #ccc;text-align:left;">Formula</th><th style="padding:5px 9px;border:1px solid #ccc;text-align:left;">Meaning</th></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">F_annual</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">(Inc+NM)÷years</td><td style="padding:4px 9px;border:1px solid #ccc;">Annual event frequency</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">RHC</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">S×P×F×E×T÷8</td><td style="padding:4px 9px;border:1px solid #ccc;">Residual Hazard Cloud per shift</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">SRS</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">min(1−∏(1−rᵢ), 0.999)</td><td style="padding:4px 9px;border:1px solid #ccc;">Combined barrier reliability (capped)</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">PHC</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">RHC₁÷(1−SRS₁)</td><td style="padding:4px 9px;border:1px solid #ccc;">Potential Hazard Cloud — uncontrolled baseline</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">RHC₂</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">PHC×(1−SRS₂)</td><td style="padding:4px 9px;border:1px solid #ccc;">Future residual hazard</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">AHC</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">S×P×F_ALARP×E×T÷8</td><td style="padding:4px 9px;border:1px solid #ccc;">ALARP acceptable hazard threshold</td></tr>
+    <tr><td style="padding:4px 9px;border:1px solid #ccc;">Sp</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">1−RHC÷PHC</td><td style="padding:4px 9px;border:1px solid #ccc;">Safety performance fraction</td></tr>
+    <tr style="background:#fafafa;"><td style="padding:4px 9px;border:1px solid #ccc;">Gap closure rate</td><td style="padding:4px 9px;border:1px solid #ccc;font-family:monospace;">(Sp2−Sp1)÷(SpALARP−Sp1)</td><td style="padding:4px 9px;border:1px solid #ccc;">Fraction of required improvement delivered</td></tr>
+  </table>
+
+  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.05em;">C. Per-Hazard Calculation Summary</div>
+  <div style="overflow-x:auto;margin-bottom:18px;">
+  <table class="appendix-table" style="width:100%;border-collapse:collapse;font-size:11px;">
+    <tr style="background:#1f3864;color:#fff;">
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;text-align:left;">Hazard</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">S</th><th style="padding:4px 7px;border:1px solid #2a4a8c;">P</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">F/yr</th><th style="padding:4px 7px;border:1px solid #2a4a8c;">E</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">T</th><th style="padding:4px 7px;border:1px solid #2a4a8c;">RHC₁</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">SRS₁</th><th style="padding:4px 7px;border:1px solid #2a4a8c;">PHC</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">AHC</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">SRS₂</th><th style="padding:4px 7px;border:1px solid #2a4a8c;">RHC₂</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">Gap closed</th>
+      <th style="padding:4px 7px;border:1px solid #2a4a8c;">Status</th>
+    </tr>`;
+
+  COLS.forEach((c,i) => {
+    const r = lastResults[c]; if(!r) return;
+    const bg = i%2===0?'':'background:#f5f7fb;';
+    const statusColor = r.fStatus==='ALARP demonstrated'?'#375623':r.fStatus==='margin band — monitor'?'#856404':'#9c0006';
+    html+=`<tr style="${bg}">
+      <td style="padding:3px 7px;border:1px solid #ccc;font-weight:600;">${hazLabel(c)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${r.cS}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${r.cP}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.F,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${r.cE}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.T,2)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.RHC1,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.cSRS)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.PHC,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.AHC_c,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.fSRS)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${numStr(r.RHC2,4)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;">${pctStr(r.closure)}</td>
+      <td style="padding:3px 7px;border:1px solid #ccc;text-align:center;font-weight:700;color:${statusColor};">${r.fStatus}</td>
+    </tr>`;
+  });
+
+  html += `</table></div>
+  <div style="margin-top:32px;padding-top:12px;border-top:1px solid #ccc;font-size:11px;color:#888;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <span>Prepared by: <strong style="color:#444;">${analyst}</strong> &nbsp;|&nbsp; ${agency}</span>
+    <span>${ref} &nbsp;|&nbsp; ${dateStr}</span>
+  </div>
+  <div style="margin-top:6px;font-size:10px;color:#aaa;line-height:1.6;">
+    Generated using the <strong style="color:#1f3864;">MyHSE.app</strong> HCM/ALARP Safety Performance Calculator v11.
+    All results are based on the input data and assumptions documented herein. Review by a qualified safety professional is required before use in decision-making.
+    <br>All numerical results are rounded to three significant figures. The inherent uncertainty of this model is estimated at ±5%, and safety performance values within this confidence band of any threshold boundary should be interpreted with professional judgement rather than as a definitive pass or fail.
+    <br><br>
+    <strong style="color:#1f3864;">Intellectual Property Notice:</strong> The Hazard Cloud Model (HCM) calculation methodology, formulae, and software implementation contained in this tool are the exclusive intellectual property of <strong style="color:#333;">Dr. Mohammad Saeed Torabi</strong>. All rights reserved. No part of this calculation engine, methodology, or output may be reproduced, distributed, modified, sublicensed, or used to develop derivative works without the express written permission of the rights holder. Unauthorised use constitutes infringement of intellectual property rights.
+    <br><br>
+    <strong style="color:#1f3864;">Disclaimer of Liability:</strong> This tool is provided for professional informational and assessment support purposes only. Dr. Mohammad Saeed Torabi and MyHSE.app expressly disclaim all liability for any loss, injury, damage, regulatory non-compliance, or adverse outcome arising from the use, misuse, or reliance upon outputs generated by this tool. Trial, demonstration, or any non-licensed use of this tool is entirely at the user's own risk. This tool does not constitute legal, engineering, or regulatory advice. All assessment outputs must be reviewed and approved by a qualified and licensed safety professional before being applied to any operational or regulatory decision.
+    <br><br>
+    For guidance on safety barrier reliability values and acceptable ALARP thresholds in transit environments, refer to:
+    <strong><a href="https://www.crossingsafety.org" target="_blank" style="color:#1f3864;">www.crossingsafety.org</a></strong> &nbsp;|&nbsp;
+    <strong><a href="https://www.safetydigitalbox.com" target="_blank" style="color:#1f3864;">www.safetydigitalbox.com</a></strong>
+  </div>`;
+
+  $('report-content').innerHTML = html;
+  $('report-modal').style.display = 'block';
+}
+
+function printReport() {
+  const html = $('report-content').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Safety Report</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm 8mm; }
+    *, *:before, *:after { box-sizing: border-box; }
+    body { font-family: Georgia, serif; font-size: 11px; line-height: 1.6; color: #111; margin: 0; padding: 0; width: 100%; }
+    h2 { font-size: 13px; margin: 8px 0 4px; }
+    p { margin: 0 0 5px; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: 9px; word-wrap: break-word; }
+    th, td { border: 1px solid #bbb; padding: 2px 4px; vertical-align: top; }
+    .appendix-table { font-size: 8px; }
+    div[style*="overflow-x:auto"] { overflow: visible !important; }
+    div[style*="overflow-x: auto"] { overflow: visible !important; }
+    /* Section cards — remove border-radius and box-shadow, ensure page break friendly */
+    div[style*="border:1px solid #dde4ef"] { border: 1px solid #ccc !important; border-radius: 0 !important; page-break-inside: avoid; margin-bottom: 10px !important; }
+    div[style*="border-radius:4px"] { border-radius: 0 !important; }
+    /* Status overview table */
+    div[style*="overflow-x:auto"] table { font-size: 8.5px; }
+    /* Flex header rows — force wrap on print */
+    div[style*="display:flex"] { display: block !important; }
+    div[style*="display:flex"] span { display: inline; margin-right: 10px; }
+    /* Colored action priority cells */
+    td[style*="background:#ffc7ce"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    td[style*="background:#fff3cd"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    td[style*="background:#e2efda"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr[style*="background:#1f3864"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr[style*="background:#f0f4fa"] { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    div[style*="background:#c6efce"], div[style*="background:#fff3cd"], div[style*="background:#ffc7ce"] {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    @media print {
+      @page { size: A4 landscape; margin: 10mm 8mm; }
+      body { font-size: 10px; }
+    }
+  </style></head><body>${html}</body></html>`);
+  w.document.close(); w.focus();
+  setTimeout(()=>w.print(), 500);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+$('rpt-date').value = new Date().toISOString().slice(0,10);
+renderTable();
+calc();
+renderLibTable();
+</script>
+</body>
+</html>

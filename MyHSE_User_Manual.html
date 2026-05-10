@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyHSE.app — HCM/ALARP Calculator User Manual</title>
+<meta name="description" content="User manual for the HCM/ALARP Safety Performance Calculator — a professional-grade rail grade crossing safety assessment tool by Dr. Mohammad Saeed Torabi.">
+<meta name="author" content="Dr. Mohammad Saeed Torabi">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:   #1f3864;
+  --gold:   #ffc000;
+  --green:  #375623;
+  --brown:  #843c0c;
+  --purple: #7030a0;
+  --blue:   #305496;
+  --cyan:   #00b0f0;
+  --red:    #c00000;
+  --lt-blue: #bdd7ee;
+  --lt-green: #e2efda;
+  --lt-yellow: #fff2cc;
+  --warn:   #fff3cd;
+  --orange: #ffe0b2;
+  --gray1:  #f5f5f5;
+  --gray2:  #e0e0e0;
+  --gray3:  #595959;
+  --white:  #ffffff;
+  --text:   #1a1a1a;
+  --sidebar-w: 260px;
+  --max-content: 860px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: #f0f2f5;
+  line-height: 1.7;
+}
+a { color: var(--navy); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Sidebar ── */
+#sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--navy);
+  color: #fff;
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-brand {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.sidebar-brand .brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+.sidebar-brand .brand-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.sidebar-nav { flex: 1; padding: 10px 0 20px; }
+.nav-group-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 14px 16px 4px;
+}
+.sidebar-nav a {
+  display: block;
+  padding: 6px 16px 6px 22px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+  line-height: 1.4;
+}
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border-left-color: var(--gold);
+  text-decoration: none;
+}
+.sidebar-nav a.h2-link { padding-left: 30px; font-size: 11px; }
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+}
+
+/* ── Main Content ── */
+#main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+}
+
+/* ── Top nav bar ── */
+#topbar {
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray2);
+  padding: 10px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 90;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+#topbar .breadcrumb { font-size: 12px; color: var(--gray3); flex: 1; }
+#topbar .topbar-links { display: flex; gap: 12px; }
+#topbar .topbar-links a {
+  font-size: 12px;
+  color: var(--navy);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Content area ── */
+.content-area {
+  max-width: calc(var(--max-content) + 64px);
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* ── Hero banner ── */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #2d4f90 100%);
+  color: #fff;
+  padding: 48px 32px 40px;
+  border-radius: 8px;
+  margin-bottom: 40px;
+}
+.hero-app { font-size: 13px; color: var(--gold); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.hero h1 { font-size: 30px; font-weight: 700; margin-bottom: 10px; line-height: 1.25; }
+.hero-desc { font-size: 15px; color: rgba(255,255,255,0.8); max-width: 640px; margin-bottom: 24px; line-height: 1.6; }
+.hero-meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: rgba(255,255,255,0.6); }
+.hero-meta span strong { color: rgba(255,255,255,0.9); }
+.hero-badges { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.badge-gold  { background: var(--gold); color: var(--navy); }
+.badge-green { background: var(--lt-green); color: var(--green); }
+.badge-blue  { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+
+/* ── Sections ── */
+.section { margin-bottom: 56px; }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--navy);
+}
+.section-num {
+  width: 36px; height: 36px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  flex-shrink: 0;
+}
+.section-header h2 { font-size: 22px; font-weight: 700; color: var(--navy); }
+h3 { font-size: 16px; font-weight: 700; color: var(--green); margin: 28px 0 10px; }
+h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin: 20px 0 8px; }
+p { margin-bottom: 12px; }
+
+/* ── Callout boxes ── */
+.callout {
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout-note    { background: #e8f4ff; border-color: var(--blue); }
+.callout-warning { background: var(--warn); border-color: var(--brown); }
+.callout-tip     { background: var(--lt-green); border-color: var(--green); }
+.callout-audit   { background: #fff5e6; border-color: var(--brown); }
+.callout-legal   { background: #fdf0f0; border-color: var(--red); }
+.callout strong.label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.callout-note    .label { color: var(--blue); }
+.callout-warning .label { color: var(--brown); }
+.callout-tip     .label { color: var(--green); }
+.callout-audit   .label { color: var(--brown); }
+.callout-legal   .label { color: var(--red); }
+
+/* ── Formula block ── */
+.formula {
+  background: #eef4fb;
+  border-left: 4px solid var(--blue);
+  border-radius: 0 4px 4px 0;
+  padding: 10px 16px;
+  margin: 10px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: var(--navy);
+  font-weight: 700;
+}
+.formula .meaning {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--gray3);
+  margin-top: 2px;
+}
+
+/* ── Code ── */
+code {
+  font-family: 'Courier New', monospace;
+  background: #f0f0f0;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+  color: var(--brown);
+}
+
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: var(--navy);
+  color: #fff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+}
+td { padding: 7px 12px; border-bottom: 1px solid var(--gray2); vertical-align: top; }
+tr:nth-child(even) td { background: var(--gray1); }
+tr:hover td { background: #e8f0fb; }
+.tbl-label { font-weight: 600; color: var(--navy); white-space: nowrap; }
+
+/* ── Colour swatches ── */
+.swatch-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--gray2); }
+.swatch { width: 56px; height: 22px; border: 1px solid #bbb; border-radius: 3px; flex-shrink: 0; }
+.swatch-name { font-family: 'Courier New', monospace; font-size: 12px; color: var(--brown); width: 100px; flex-shrink: 0; }
+.swatch-desc { font-size: 13px; }
+
+/* ── Steps ── */
+.steps { counter-reset: step; margin: 16px 0; }
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  counter-increment: step;
+}
+.step::before {
+  content: counter(step);
+  width: 26px; height: 26px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-body { flex: 1; }
+.step-body strong { display: block; margin-bottom: 2px; }
+
+/* ── Bullets ── */
+ul.doc-list { padding-left: 24px; margin: 8px 0 16px; }
+ul.doc-list li { margin-bottom: 6px; font-size: 14px; line-height: 1.6; }
+ul.doc-list li::marker { color: var(--navy); }
+
+/* ── ALARP status chips ── */
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status-green  { background: #c6efce; color: #375623; }
+.status-amber  { background: #fff3cd; color: #856404; }
+.status-red    { background: #ffc7ce; color: #9c0006; }
+
+/* ── Benchmark table highlight ── */
+.num { font-family: 'Courier New', monospace; text-align: right; }
+
+/* ── Legal section ── */
+.legal-block {
+  background: #fdf0f0;
+  border: 1px solid #f5c0c0;
+  border-left: 5px solid var(--red);
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+.legal-block h3 { color: var(--red); margin-top: 0; font-size: 14px; }
+.legal-block p { font-size: 13px; color: #444; line-height: 1.75; margin-bottom: 10px; }
+
+/* ── IP highlight box ── */
+.ip-block {
+  background: linear-gradient(135deg, #1f3864 0%, #2d5a8e 100%);
+  color: #fff;
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin: 24px 0;
+}
+.ip-block h3 { color: var(--gold); margin-top: 0; font-size: 16px; }
+.ip-block p { color: rgba(255,255,255,0.88); font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
+.ip-block p:last-child { margin-bottom: 0; }
+
+/* ── Reference cards ── */
+.ref-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.ref-card {
+  border: 1px solid var(--gray2);
+  border-radius: 6px;
+  padding: 16px;
+  background: #fff;
+}
+.ref-card a { font-size: 15px; font-weight: 700; color: var(--navy); display: block; margin-bottom: 6px; }
+.ref-card p { font-size: 12px; color: var(--gray3); margin: 0; }
+
+/* ── Footer ── */
+#site-footer {
+  background: var(--navy);
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  padding: 24px 32px;
+  text-align: center;
+  line-height: 1.8;
+  margin-left: var(--sidebar-w);
+}
+#site-footer strong { color: var(--gold); }
+#site-footer a { color: rgba(255,255,255,0.7); }
+#site-footer a:hover { color: #fff; }
+
+/* ── Print ── */
+@media print {
+  #sidebar, #topbar { display: none; }
+  #main { margin-left: 0; }
+  .hero { background: var(--navy) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+  #sidebar { transform: translateX(-260px); transition: transform 0.3s; }
+  #sidebar.open { transform: translateX(0); width: 260px; }
+  #main { margin-left: 0; }
+  #site-footer { margin-left: 0; }
+  .ref-cards { grid-template-columns: 1fr; }
+  #topbar { padding: 10px 16px; }
+  .content-area { padding: 24px 16px 60px; }
+  #menu-toggle { display: flex; }
+}
+#menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--navy);
+  font-size: 20px;
+  padding: 2px 6px;
+}
+
+/* ── Active section highlight ── */
+.section { scroll-margin-top: 70px; }
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-name">MyHSE.app</div>
+    <div class="brand-sub">HCM / ALARP Safety Performance Calculator<br>User Manual · v11</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group-label">Overview</div>
+    <a href="#legal" class="h2-link">⚖ Legal &amp; IP Notice</a>
+    <a href="#audit">1. Calculation Audit</a>
+    <a href="#quickref">2. Quick Reference</a>
+
+    <div class="nav-group-label">Operating Procedure</div>
+    <a href="#sop">3. Step-by-Step SOP</a>
+    <a href="#sop-s1" class="h2-link">Step 1 — Prepare</a>
+    <a href="#sop-s2" class="h2-link">Step 2 — Open &amp; Configure</a>
+    <a href="#sop-s3" class="h2-link">Step 3 — Incident Data</a>
+    <a href="#sop-s4" class="h2-link">Step 4 — Hazard Parameters</a>
+    <a href="#sop-s5" class="h2-link">Step 5 — Current Barriers</a>
+    <a href="#sop-s6" class="h2-link">Step 6 — Current ALARP</a>
+    <a href="#sop-s7" class="h2-link">Step 7 — Future Barriers</a>
+    <a href="#sop-s8" class="h2-link">Step 8 — Validate</a>
+    <a href="#sop-s9" class="h2-link">Step 9 — Report</a>
+    <a href="#sop-s10" class="h2-link">Step 10 — File &amp; Approve</a>
+
+    <div class="nav-group-label">Reference</div>
+    <a href="#worked">4. Worked Example</a>
+    <a href="#library">5. Barrier Library Guide</a>
+    <a href="#qa">6. QA Checklist</a>
+    <a href="#glossary">7. Glossary</a>
+    <a href="#refs">8. References</a>
+  </div>
+  <div class="sidebar-footer">
+    © Dr. Mohammad Saeed Torabi<br>
+    All rights reserved · MyHSE.app
+  </div>
+</nav>
+
+<!-- ════ MAIN ════ -->
+<div id="main">
+
+<!-- Top bar -->
+<div id="topbar">
+  <button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" title="Toggle menu">☰</button>
+  <span class="breadcrumb">MyHSE.app &rsaquo; HCM/ALARP Calculator &rsaquo; User Manual</span>
+  <div class="topbar-links">
+    <a href="https://www.crossingsafety.org" target="_blank">crossingsafety.org</a>
+    <a href="https://www.safetydigitalbox.com" target="_blank">safetydigitalbox.com</a>
+  </div>
+</div>
+
+<div class="content-area">
+
+<!-- ════ HERO ════ -->
+<div class="hero">
+  <div class="hero-app">MyHSE.app</div>
+  <h1>HCM / ALARP Safety Performance Calculator<br>User Manual</h1>
+  <p class="hero-desc">A professional-grade tool for quantitative safety assessment at light rail vehicle grade crossings. Implements the Hazard Cloud Model (HCM) and ALARP framework to measure and demonstrate safety performance.</p>
+  <div class="hero-meta">
+    <span><strong>Author:</strong> Dr. Mohammad Saeed Torabi</span>
+    <span><strong>Version:</strong> 11.0</span>
+    <span><strong>Tool file:</strong> hcm_calculator_v11.html</span>
+    <span><strong>Audience:</strong> Qualified Safety Professionals</span>
+  </div>
+  <div class="hero-badges">
+    <span class="badge badge-gold">HCM v11</span>
+    <span class="badge badge-green">Audit Verified</span>
+    <span class="badge badge-blue">ALARP Framework</span>
+    <span class="badge badge-blue">Grade Crossing Safety</span>
+  </div>
+</div>
+
+<!-- ════ LEGAL & IP ════ -->
+<div class="section" id="legal">
+  <div class="section-header">
+    <div class="section-num">⚖</div>
+    <h2>Legal Notice, Intellectual Property, and Disclaimer</h2>
+  </div>
+
+  <div class="ip-block">
+    <h3>Intellectual Property — Exclusive Rights</h3>
+    <p>The <strong>Hazard Cloud Model (HCM)</strong> calculation methodology, mathematical framework, formulae, scoring system, and software implementation contained in this tool and its documentation are the <strong>exclusive intellectual property of Dr. Mohammad Saeed Torabi</strong>. All rights are reserved worldwide.</p>
+    <p>Any reproduction, distribution, adaptation, sublicensing, incorporation into other works, or use of this methodology — in whole or in part — to develop derivative tools, reports, or commercial offerings requires the <strong>express written authorisation of the rights holder</strong>. Unauthorised use constitutes infringement of intellectual property and is subject to applicable civil and criminal remedies.</p>
+    <p>The name "Hazard Cloud Model", the HCM scoring framework, and associated calculations may not be represented as the work of any other person or organisation.</p>
+  </div>
+
+  <div class="legal-block">
+    <h3>Disclaimer of Liability</h3>
+    <p><strong>No warranty:</strong> This tool is provided "as is" for professional informational and assessment-support purposes only. Dr. Mohammad Saeed Torabi and MyHSE.app make no warranty, express or implied, regarding the accuracy, completeness, suitability, or fitness for any particular purpose of the outputs generated by this tool.</p>
+    <p><strong>Limitation of liability:</strong> Dr. Mohammad Saeed Torabi and MyHSE.app expressly disclaim all liability for any loss, personal injury, death, property damage, regulatory non-compliance, enforcement action, or adverse outcome of any kind arising directly or indirectly from the use, misuse, or reliance upon outputs generated by this tool.</p>
+    <p><strong>Trial and demonstration use:</strong> Any trial, evaluation, demonstration, or non-licensed use of this tool is entirely at the user's own risk. The tool operator, and not Dr. Mohammad Saeed Torabi or MyHSE.app, bears sole and exclusive responsibility for all decisions made based on outputs from such use.</p>
+    <p><strong>Not professional advice:</strong> Outputs from this tool do not constitute legal, engineering, regulatory, or safety advice. All assessment outputs must be reviewed and approved by a qualified and licensed safety professional before being applied to any operational, regulatory, or legal decision.</p>
+    <p><strong>Indemnification:</strong> By using this tool, the user agrees to indemnify and hold harmless Dr. Mohammad Saeed Torabi and MyHSE.app against any claim, liability, cost, or expense arising from the user's use of the tool or reliance on its outputs.</p>
+    <p><strong>Jurisdictional limitations:</strong> This tool has been developed for professional use in transit safety assessment contexts. Users are responsible for ensuring compliance with all applicable local, national, and international laws, regulations, and professional standards in their jurisdiction.</p>
+  </div>
+
+  <div class="callout callout-warning">
+    <strong class="label">⚠ Important</strong>
+    This tool supports — but does not replace — the judgement of a qualified safety professional. Every assessment output must be peer-reviewed and approved before use in any operational or regulatory context.
+  </div>
+</div>
+
+<!-- ════ CALCULATION AUDIT ════ -->
+<div class="section" id="audit">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>Calculation Audit — Precision and Mathematical Verification</h2>
+  </div>
+
+  <p>This section documents the results of a full mathematical audit of the calculation engine. Read it before operating the tool to understand what the numbers mean, how precise they are, and what the known limitations are.</p>
+
+  <h3>Key Identity: Sp = SRS (always)</h3>
+  <div class="formula">
+    Sp = 1 − RHC ÷ PHC = 1 − (1 − SRS) = SRS
+    <div class="meaning">Safety Performance is mathematically identical to the Safety Reliability Score — this is a provable identity, not a coincidence.</div>
+  </div>
+  <p>This identity holds for every hazard column on every assessment. It means the Sp and SRS rows in the table will always show the same number in different formats (fraction vs percentage). If they appear to differ, it is a display rounding artefact only — the underlying calculation is correct.</p>
+
+  <h3>PHC is a Fixed Anchor</h3>
+  <div class="formula">
+    PHC = RHC₁ ÷ (1 − SRS₁)
+    <div class="meaning">Computed once from the current condition. Does not change when future barriers are added or modified.</div>
+  </div>
+  <p>PHC represents the theoretical hazard if all barriers were removed. It is anchored to the current-condition SRS and serves as the invariant denominator for all safety performance calculations. Adding future barriers improves Sp₂ (via SRS₂) but never changes PHC.</p>
+
+  <h3>Numerical Benchmark — Default Inputs</h3>
+  <p>The following values are hand-verified against the formula chain with the tool's default crossing data (3-year period, svcOW=6, revHrs=15, minExp=1, trkPct=0.333, darkHrs=6). Use these to confirm the tool is operating correctly on any installation.</p>
+
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Hazard</th><th>F/yr</th><th>T (hrs)</th><th>RHC₁</th><th>SRS₁ = Sp₁</th><th>PHC</th><th>SpALARP</th><th>SRS₂ = Sp₂</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">Train vs Ped</td><td class="num">4.333</td><td class="num">3.000</td><td class="num">11.700</td><td class="num">85.0%</td><td class="num">78.000</td><td class="num">99.7%</td><td class="num">97.3%</td><td><span class="status-chip status-amber">Margin band</span></td></tr>
+      <tr><td class="tbl-label">Train vs Veh</td><td class="num">5.333</td><td class="num">3.000</td><td class="num">12.000</td><td class="num">88.6%</td><td class="num">105.263</td><td class="num">98.9%</td><td class="num">88.6%</td><td><span class="status-chip status-red">Needs enh.</span></td></tr>
+      <tr><td class="tbl-label">Train vs Bike</td><td class="num">0.667</td><td class="num">3.000</td><td class="num">2.025</td><td class="num">76.5%</td><td class="num">8.617</td><td class="num">96.5%</td><td class="num">79.7%</td><td><span class="status-chip status-red">Needs enh.</span></td></tr>
+      <tr><td class="tbl-label">Veh Track Intr</td><td class="num">6.667</td><td class="num">1.998</td><td class="num">4.995</td><td class="num">51.0%</td><td class="num">10.194</td><td class="num">92.7%</td><td class="num">70.6%</td><td><span class="status-chip status-red">Needs enh.</span></td></tr>
+      <tr><td class="tbl-label">Ped Track Intr</td><td class="num">4.333</td><td class="num">1.998</td><td class="num">6.926</td><td class="num">50.0%</td><td class="num">13.853</td><td class="num">98.8%</td><td class="num">88.8%</td><td><span class="status-chip status-red">Needs enh.</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout callout-tip">
+    <strong class="label">✔ Verification tip</strong>
+    Open the tool with all default values and confirm your RHC₁ values match this table to 3 decimal places. If they differ, check that dataYrs = 3 and all T-parameters are at their defaults.
+  </div>
+
+  <h3>Precision and Sources of Uncertainty</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Source</th><th>Practical impact and mitigation</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">Arithmetic precision</td><td>IEEE 754 double precision (15 significant figures) throughout. Display rounding (3dp HazPoC, 1dp %) never affects intermediate calculations.</td></tr>
+      <tr><td class="tbl-label">Barrier r-values</td><td>Engineering estimates, not measured probabilities. Use the condition multiplier honestly. A barrier in poor condition should use "Degraded" (×0.5), not "As designed" (×1.0).</td></tr>
+      <tr><td class="tbl-label">SRS independence assumption</td><td>Real barriers often share failure modes. The SRS may be 5–20% optimistic when barriers are not truly independent. The independence disclaimer in the tool is a mandatory reminder.</td></tr>
+      <tr><td class="tbl-label">Frequency estimation</td><td>F derived from small samples carries high statistical uncertainty. Use a minimum 3-year data period. Flag low-count categories.</td></tr>
+      <tr><td class="tbl-label">F_ALARP (policy input)</td><td>SpALARP depends entirely on the F_ALARP/F ratio. Never change F_ALARP without Safety Manager approval and documentation.</td></tr>
+      <tr><td class="tbl-label">Overall model uncertainty</td><td>Estimated at ±5% on Sp. Values within 5 percentage points of any threshold require professional judgement and peer review.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Known Edge Cases</h3>
+  <div class="callout callout-audit">
+    <strong class="label">🔍 Edge case — F = 0</strong>
+    If no incidents or near misses are recorded for a hazard category, RHC₁ = 0 and PHC = 0, making Sp undefined (0÷0). The tool correctly displays "—" for all derived values. Zero observed events cannot produce a meaningful PHC anchor. Use a minimum F derived from exposure data or FMEA — not purely from observation.
+  </div>
+  <div class="callout callout-audit">
+    <strong class="label">🔍 Edge case — F_ALARP &gt; F (observed frequency)</strong>
+    If the target frequency is set above the observed frequency, SpALARP will fall below the current Sp and ALARP will appear demonstrated without any barriers. This is mathematically correct but operationally misleading. Verify F_ALARP is appropriate before accepting a green status in this situation.
+  </div>
+  <div class="callout callout-audit">
+    <strong class="label">🔍 Edge case — High SRS (&gt; 0.99)</strong>
+    PHC becomes very sensitive to small r-value changes when SRS is near 0.999. A change of ±0.01 in a single r can move Sp by several percentage points. The high-SRS warning banner activates automatically. Always conduct a sensitivity check (±0.05 on the highest r-values) when this warning appears.
+  </div>
+</div>
+
+<!-- ════ QUICK REFERENCE ════ -->
+<div class="section" id="quickref">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>Quick Reference — Formulas, Status Tiers, and Interface</h2>
+  </div>
+
+  <h3>Complete Formula Chain</h3>
+  <div class="formula">F = (Incidents + Near Misses) ÷ Data years<div class="meaning">Annual event frequency — derived from observed data</div></div>
+  <div class="formula">T = svcOW × revHrs × 2 × minExp ÷ 60 &nbsp; [collision hazards]<div class="meaning">Threat time in hours — both directions of LRV travel</div></div>
+  <div class="formula">T = trkPct × darkHrs &nbsp; [track intrusion hazards]<div class="meaning">Threat time for track intrusion categories</div></div>
+  <div class="formula">RHC = S × P × F × E × T ÷ 8<div class="meaning">Residual Hazard Cloud per 8-hour shift, in HazPoC units</div></div>
+  <div class="formula">SRS = 1 − ∏(1 − rᵢ) &nbsp; [capped at 0.999]<div class="meaning">Safety Reliability Score — combined probability at least one barrier intercepts</div></div>
+  <div class="formula">PHC = RHC₁ ÷ (1 − SRS₁) &nbsp; [fixed anchor]<div class="meaning">Potential Hazard Cloud — theoretical uncontrolled hazard level</div></div>
+  <div class="formula">AHC = S × P × F_ALARP × E × T ÷ 8<div class="meaning">Acceptable Hazard Cloud — tolerable threshold at ALARP target frequency</div></div>
+  <div class="formula">Sp = 1 − RHC ÷ PHC = SRS &nbsp; [identity]<div class="meaning">Safety Performance — fraction of potential hazard controlled (%)</div></div>
+  <div class="formula">RHC₂ = PHC × (1 − SRS₂)<div class="meaning">Future residual hazard after proposed improvements</div></div>
+  <div class="formula">Gap closure = (Sp₂ − Sp₁) ÷ (SpALARP − Sp₁)<div class="meaning">Fraction of required Sp improvement delivered by future controls</div></div>
+
+  <h3>ALARP Status Tiers</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Status</th><th>Condition</th><th>Meaning and action</th></tr></thead>
+    <tbody>
+      <tr><td><span class="status-chip status-green">✓ ALARP demonstrated</span></td><td>Sp ≥ SpALARP</td><td>Hazard controlled to the acceptable level. Annual review and barrier maintenance.</td></tr>
+      <tr><td><span class="status-chip status-amber">◑ Margin band — monitor</span></td><td>SpALARP − Sp ≤ margin (default 10%)</td><td>Close to threshold but not demonstrably below it. Documented monitoring required. <strong>Not the same as acceptable.</strong></td></tr>
+      <tr><td><span class="status-chip status-red">⚠ Needs enhancement</span></td><td>Gap &gt; margin</td><td>Formal improvement programme required. Escalate to Safety Manager immediately.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Cell Colour Coding</h3>
+  <div class="swatch-row"><div class="swatch" style="background:#dae3f3"></div><span class="swatch-name">bg-data</span><span class="swatch-desc">Past observed data — read from source systems. Do not edit.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#fff2cc"></div><span class="swatch-name">bg-input</span><span class="swatch-desc">User input — S, P, E, barrier r-values. Always editable.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#e2efda"></div><span class="swatch-name">bg-calc</span><span class="swatch-desc">Calculated automatically. Read-only — SRS, Gap, Closure, etc.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#f4b8d1"></div><span class="swatch-name">bg-assump</span><span class="swatch-desc">F_ALARP — policy assumption. Change only with Safety Manager approval.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#00b0f0"></div><span class="swatch-name">bg-cyan</span><span class="swatch-desc">Future barrier cell modified from its current value.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#d9ead3;border-left:4px solid #38761d"></div><span class="swatch-name">bg-new</span><span class="swatch-desc">New future barrier row — proposed, not installed today.</span></div>
+  <div class="swatch-row"><div class="swatch" style="background:#e8e8e8"></div><span class="swatch-name">(inline)</span><span class="swatch-desc">Deactivated barrier — excluded from SRS, kept as audit trail.</span></div>
+  <div class="swatch-row" style="border:none"><div class="swatch" style="background:#ffff00"></div><span class="swatch-name">bg-sp</span><span class="swatch-desc">Safety Performance (Sp) and Sp_ALARP result rows only.</span></div>
+
+  <h3>Button Reference</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Button</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><code>✏</code></td><td>Rename a barrier row, or edit a hazard template (in column header).</td></tr>
+      <tr><td><code>📝</code></td><td>Open / close the description note popup for that barrier cell.</td></tr>
+      <tr><td><code>⏸</code></td><td>Deactivate barrier — excluded from SRS, row kept for audit trail.</td></tr>
+      <tr><td><code>▶</code></td><td>Reactivate a deactivated barrier — restores it to SRS calculation.</td></tr>
+      <tr><td><code>✕</code></td><td>Remove barrier permanently (confirmation required). Frees it in the library.</td></tr>
+      <tr><td><code>＋</code></td><td>Open the Quick-Add Panel for a specific hazard column.</td></tr>
+      <tr><td><code>LIB-XX</code></td><td>Click to jump to that barrier's entry in the Safety Barrier Library panel.</td></tr>
+      <tr><td><code>manual ✎</code></td><td>Switch the bike cell for that barrier to manual r entry.</td></tr>
+      <tr><td><code>← auto</code></td><td>Switch the bike cell back to the MIN(Ped,Veh)×0.9 derived value.</td></tr>
+      <tr><td><code>✕ reset</code></td><td>Clear the description in a note popup without affecting other notes.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ════ SOP ════ -->
+<div class="section" id="sop">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>Step-by-Step Assessment Procedure (SOP)</h2>
+  </div>
+  <p>Follow these steps in sequence for every formal crossing assessment. Each step refers to the specific interface element to interact with.</p>
+
+  <!-- Step 1 -->
+  <h3 id="sop-s1">Step 1 — Prepare Before Opening the Tool</h3>
+  <p>Gather the following before opening the Calculator:</p>
+  <ul class="doc-list">
+    <li><strong>Incident extract:</strong> Confirmed incidents from the safety database, last 3–5 years, for all user groups at this crossing.</li>
+    <li><strong>Near-miss records:</strong> Operator reports and CCTV review logs. Do not estimate from memory — retrieve actual records.</li>
+    <li><strong>Track intrusion count:</strong> Vehicle encroachments into the track zone from detector logs or CCTV.</li>
+    <li><strong>Service schedule:</strong> Current timetable — trains per hour (one way) and daily revenue hours.</li>
+    <li><strong>Previous assessment:</strong> If one exists, note prior barrier r-values and ALARP status for continuity.</li>
+    <li><strong>Document reference:</strong> Assign a reference number from the safety register before starting.</li>
+  </ul>
+  <div class="callout callout-warning">
+    <strong class="label">⚠ Warning</strong>
+    Do not estimate near-miss counts from memory. Under-reporting near misses directly lowers F and makes the crossing appear safer than it is.
+  </div>
+
+  <!-- Step 2 -->
+  <h3 id="sop-s2">Step 2 — Open and Configure</h3>
+  <div class="steps">
+    <div class="step"><div class="step-body"><strong>Open the tool.</strong> Double-click <code>hcm_calculator_v11.html</code>. Confirm "v11" appears in the top bar.</div></div>
+    <div class="step"><div class="step-body"><strong>Enter crossing name.</strong> Type in the "Crossing / Location" field. This populates all report headers.</div></div>
+    <div class="step"><div class="step-body"><strong>Fill the Report Info Bar.</strong> Analyst name, agency/organisation, reference number, date, and ALARP margin (default 10% unless otherwise specified by the Safety Manager).</div></div>
+  </div>
+  <div class="callout callout-note">
+    <strong class="label">ℹ Note</strong>
+    The ALARP margin sets the amber zone width. A 10% margin means a crossing within 10 Sp percentage points of SpALARP is amber, not red. Confirm the approved value before changing.
+  </div>
+
+  <!-- Step 3 -->
+  <h3 id="sop-s3">Step 3 — Enter Incident and Observation Data (Section 1)</h3>
+  <p>Enter every count from your source records. Use 0 for categories with no events — never leave blank.</p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Field</th><th>Source</th><th>Common error</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">pInc, pNM</td><td>Safety database + operator NM reports</td><td>Omitting near misses — include all close calls</td></tr>
+      <tr><td class="tbl-label">vInc, vNM</td><td>Safety database + police reports</td><td>Including events from other crossings in the extract</td></tr>
+      <tr><td class="tbl-label">bInc, bNM</td><td>Safety database + CCTV logs</td><td>Often under-reported; use zero only if CCTV confirms none</td></tr>
+      <tr><td class="tbl-label">vIntr</td><td>Detector logs or CCTV zone entries</td><td>Counting gate activations instead of actual zone entries</td></tr>
+      <tr><td class="tbl-label">piInc, piNM</td><td>Observer reports + CCTV</td><td>Conflating with ped incidents — separate categories</td></tr>
+      <tr><td class="tbl-label">dataYrs</td><td>Start and end dates of extract</td><td>Assuming 3 years when the extract covers a different period</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>T-parameters</strong> (set from the current service schedule):</p>
+  <ul class="doc-list">
+    <li><strong>svcOW:</strong> LRVs per hour, one direction. Use peak-period frequency.</li>
+    <li><strong>revHrs:</strong> Total hours per day the line is in service.</li>
+    <li><strong>minExp:</strong> Average minutes a road user spends in the hazard zone (default 1 min).</li>
+    <li><strong>trkPct:</strong> Fraction of road traffic that enters the track zone — measure from CCTV.</li>
+    <li><strong>darkHrs:</strong> Hours per day with reduced visibility. Used only for track intrusion T.</li>
+  </ul>
+  <div class="callout callout-tip">
+    <strong class="label">✔ Tip</strong>
+    After entering T-parameters, check the calculated F and T in the green cells. F_ped should equal (pInc + pNM) ÷ dataYrs. T_col should equal svcOW × revHrs × 2 × minExp ÷ 60.
+  </div>
+
+  <!-- Step 4 -->
+  <h3 id="sop-s4">Step 4 — Review Hazard Parameters (S, P, E, F_ALARP)</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Param</th><th>Default</th><th>When to change</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">S (Severity)</td><td>9 / 6 / 9 / 5 / 8</td><td>Only if a formal consequence study for this crossing justifies a different rating. Document the basis.</td></tr>
+      <tr><td class="tbl-label">P (Escalation probability)</td><td>0.8 / 0.5 / 0.9 / 0.3 / 0.8</td><td>Site-specific data (sight-line study, speed data) can justify adjustment. Peer review required.</td></tr>
+      <tr><td class="tbl-label">E (Exposed persons)</td><td>1 / 2 / 1 / 2 / 1</td><td>Adjust for vehicle occupancy data. E=2 for vehicles assumes average occupancy of 2.</td></tr>
+      <tr><td class="tbl-label">F_ALARP</td><td>0.1 / 0.5 / 0.1 / 1.0 / 0.1 /yr</td><td>Agency policy input. Do not change without Safety Manager sign-off.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout callout-warning">
+    <strong class="label">⚠ Warning</strong>
+    If F_ALARP is set above the observed F for any category, SpALARP will fall below current Sp and ALARP appears demonstrated without barriers. Verify F_ALARP is appropriate before accepting any green status.
+  </div>
+
+  <!-- Step 5 -->
+  <h3 id="sop-s5">Step 5 — Enter Current Barrier Reliabilities</h3>
+  <p>For each barrier row, enter the r-value for each hazard column where it provides protection. Enter 0 where it does not apply.</p>
+  <h4>Choosing the right r-value</h4>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Condition</th><th>Multiplier</th><th>When to use</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">As designed</td><td>×1.0</td><td>New installation, recently commissioned to specification.</td></tr>
+      <tr><td class="tbl-label">Good condition</td><td>×0.9</td><td>In service, within maintenance schedule, no defects.</td></tr>
+      <tr><td class="tbl-label">Moderate</td><td>×0.75</td><td>Some wear, minor maintenance backlog, functionally intact.</td></tr>
+      <tr><td class="tbl-label">Degraded</td><td>×0.5</td><td>Visible wear, overdue maintenance, reduced effectiveness.</td></tr>
+      <tr><td class="tbl-label">Poor</td><td>×0.3</td><td>Non-compliant with design spec, pending replacement.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>For every non-zero r-value, click <code>📝</code> and describe what this barrier physically is at this location. These descriptions appear in the Management Report.</p>
+  <h4>Bike column — auto vs manual</h4>
+  <p>By default: <code>SRS_bike = MIN(SRS_Ped, SRS_Veh) × 0.9</code> for all barriers. To enter site-specific bike r-values for individual barriers, click <code>manual ✎</code> in that barrier's Bike cell. The SRS combines manual entries with the auto-derived base from remaining auto barriers. Current and future sides are independent.</p>
+
+  <!-- Step 6 -->
+  <h3 id="sop-s6">Step 6 — Check Current ALARP Status</h3>
+  <p>Look at the ALARP Status row, Current Condition side:</p>
+  <ul class="doc-list">
+    <li><span class="status-chip status-green">Green</span> — Record in safety register. Proceed to Step 7.</li>
+    <li><span class="status-chip status-amber">Amber</span> — Record with monitoring note. Increase inspection schedule. Continue to Step 7.</li>
+    <li><span class="status-chip status-red">Red</span> — Escalate to Safety Manager before proceeding. Do not file the report without a corrective action commitment.</li>
+  </ul>
+
+  <!-- Step 7 -->
+  <h3 id="sop-s7">Step 7 — Add Proposed Future Barriers</h3>
+  <p>Three methods — all set current r = 0 by default and must be filled manually:</p>
+  <h4>Method A — Column ＋ button</h4>
+  <div class="steps">
+    <div class="step"><div class="step-body">Click <code>＋</code> in the column header for the hazard you are improving.</div></div>
+    <div class="step"><div class="step-body">Select the condition from the dropdown — auto-checks the checkbox.</div></div>
+    <div class="step"><div class="step-body">Review the Final r (= rNom × multiplier, capped at rMax).</div></div>
+    <div class="step"><div class="step-body">Click "Add selected". Enter the current-side r for each added barrier.</div></div>
+  </div>
+  <h4>Method B — Safety Barrier Library panel</h4>
+  <div class="steps">
+    <div class="step"><div class="step-body">Scroll to the Library panel below the main table. Filter by layer and/or hazard type.</div></div>
+    <div class="step"><div class="step-body">Set the condition dropdown for each barrier — auto-selects.</div></div>
+    <div class="step"><div class="step-body">Click "＋ Add selected to assessment". Enter current r values for each.</div></div>
+  </div>
+  <h4>Method C — Manual row</h4>
+  <div class="steps">
+    <div class="step"><div class="step-body">Click "+ Add new future safety barrier row". Click <code>✏</code> to name it.</div></div>
+    <div class="step"><div class="step-body">Enter r-values directly for both current and future sides. Add <code>📝</code> descriptions.</div></div>
+  </div>
+
+  <!-- Step 8 -->
+  <h3 id="sop-s8">Step 8 — Validate Future Condition</h3>
+  <div class="steps">
+    <div class="step"><div class="step-body">SRS₂ > SRS₁ for each improved column. A barrier with r &gt; 0 should increase SRS.</div></div>
+    <div class="step"><div class="step-body">Gap closure ≥ 50% for any currently red column. Below 50% means proposed improvements are insufficient.</div></div>
+    <div class="step"><div class="step-body">If the High SRS warning banner appears, document a sensitivity check (vary key r by ±0.05 and note the Sp range).</div></div>
+    <div class="step"><div class="step-body">Note any columns still red after improvements — these require corrective action items.</div></div>
+  </div>
+
+  <!-- Step 9 -->
+  <h3 id="sop-s9">Step 9 — Generate, Review, and Save the Report</h3>
+  <div class="steps">
+    <div class="step"><div class="step-body">Click "📄 Generate Management Report" in the Report Info Bar.</div></div>
+    <div class="step"><div class="step-body">Read the narrative sections — verify barrier names and descriptions are accurate and specific.</div></div>
+    <div class="step"><div class="step-body">Check recommended actions: L1 (foundational) must be addressed before L2 (detection), before L4 (human). If the order seems wrong, check layer badges on barrier rows.</div></div>
+    <div class="step"><div class="step-body">Click "Print / Save PDF". Select A4 Landscape. <strong>Save immediately.</strong></div></div>
+    <div class="step"><div class="step-body">Name the file: <code>SAF-YYYY-NNN_[CrossingName]_Assessment.pdf</code> and file in the designated folder.</div></div>
+  </div>
+  <div class="callout callout-warning">
+    <strong class="label">⚠ Warning</strong>
+    Save the PDF before closing the report window. The tool does not auto-save reports. Once the modal is closed, the generated content is gone (inputs remain in local storage).
+  </div>
+
+  <!-- Step 10 -->
+  <h3 id="sop-s10">Step 10 — Approval and Filing</h3>
+  <div class="steps">
+    <div class="step"><div class="step-body">Submit the PDF to the Safety Manager for review and countersignature.</div></div>
+    <div class="step"><div class="step-body">Record reference number, date, current and future ALARP status, and reassessment date in the safety register.</div></div>
+    <div class="step"><div class="step-body">Open a Corrective Action item for each red-status column (current or future).</div></div>
+    <div class="step"><div class="step-body">Schedule the next assessment at the recommended reassessment date shown in the report header.</div></div>
+  </div>
+</div>
+
+<!-- ════ WORKED EXAMPLE ════ -->
+<div class="section" id="worked">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>Worked Example — Pedestrian Collision Hazard</h2>
+  </div>
+  <p>This traces the complete calculation for the Train vs Pedestrian hazard using the default crossing data.</p>
+
+  <h3>Inputs</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Incidents (pInc) + Near misses (pNM)</td><td>2 + 11 = 13 events over 3 years</td></tr>
+      <tr><td>Service frequency (svcOW), revenue hours, exposure</td><td>6 trains/hr, 15 hrs/day, 1 min exposure</td></tr>
+      <tr><td>S, P, E, F_ALARP</td><td>9, 0.8, 1 person, 0.1 events/yr</td></tr>
+      <tr><td>Current barriers</td><td>Operator control r=0.5, Ped signal r=0.7</td></tr>
+      <tr><td>Proposed future additions</td><td>Traffic Signal (ped) r=0.6, Road Marker r=0.25, Track Night Visibility r=0.4</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Calculation Steps</h3>
+  <div class="formula">F = (2 + 11) ÷ 3 = 4.333 events/yr</div>
+  <div class="formula">T = 6 × 15 × 2 × 1 ÷ 60 = 3.000 hrs/day</div>
+  <div class="formula">RHC₁ = 9 × 0.8 × 4.333 × 1 × 3.000 ÷ 8 = 11.700 HazPoC/shift</div>
+  <div class="formula">SRS₁ = 1 − (1−0.5) × (1−0.7) = 1 − 0.15 = 0.850 (85.0%)</div>
+  <div class="formula">PHC = 11.700 ÷ (1 − 0.850) = 11.700 ÷ 0.150 = 78.000 HazPoC/shift [FIXED]</div>
+  <div class="formula">AHC = 9 × 0.8 × 0.1 × 1 × 3.000 ÷ 8 = 0.270 HazPoC/shift</div>
+  <div class="formula">Sp₁ = 1 − 11.700 ÷ 78.000 = 0.850 (85.0%) = SRS₁ ✓</div>
+  <div class="formula">SpALARP = 1 − 0.270 ÷ 78.000 = 99.7%  →  Gap = 14.7%  →  Needs enhancement</div>
+  <div class="formula">SRS₂ = 1 − (1−0.5)(1−0.7)(1−0.6)(1−0.25)(1−0.4) = 1 − 0.027 = 0.973 (97.3%)</div>
+  <div class="formula">RHC₂ = 78.000 × (1 − 0.973) = 2.106 HazPoC/shift</div>
+  <div class="formula">Sp₂ = 97.3%  →  Gap = 2.4%  →  Within 10% margin  →  Margin band — monitor</div>
+  <div class="formula">Gap closure = (97.3% − 85.0%) ÷ (99.7% − 85.0%) = 12.3% ÷ 14.7% = 83.9%</div>
+
+  <div class="callout callout-tip">
+    <strong class="label">✔ Interpretation</strong>
+    The proposed future barriers close 83.9% of the required gap. The status improves from red (Needs enhancement) to amber (Margin band — monitor). A 2-year reassessment is recommended.
+  </div>
+</div>
+
+<!-- ════ LIBRARY GUIDE ════ -->
+<div class="section" id="library">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>Safety Barrier Library — Selection and Condition Guide</h2>
+  </div>
+
+  <h3>Engineering Layer Hierarchy</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Layer</th><th>Name</th><th>Role</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td><strong>L1</strong></td><td>Foundational / System</td><td>Structural controls in system design. Highest Sp gain per investment.</td><td>ATP, grade separation, signal interlock</td></tr>
+      <tr><td><strong>L2</strong></td><td>Detection + Active Response</td><td>Sensors and systems that detect and respond to developing hazards.</td><td>Obstacle detection, radar, interlocked gates, CCTV with operator</td></tr>
+      <tr><td><strong>L3</strong></td><td>Physical</td><td>Passive barriers preventing or deterring access.</td><td>Fences, bollards, anti-trespass panels</td></tr>
+      <tr><td><strong>L4</strong></td><td>Human + Awareness</td><td>Controls dependent on human behaviour and compliance.</td><td>Training, signs, markings, speed restrictions</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout callout-warning">
+    <strong class="label">⚠ Hierarchy Rule</strong>
+    Recommended actions always follow L1 → L2 → L3 → L4. Do not skip to L4 improvements before addressing missing L1/L2 controls. L4 alone cannot compensate for a missing foundational layer.
+  </div>
+
+  <h3>Library r-values</h3>
+  <ul class="doc-list">
+    <li><strong>rMin:</strong> Minimum achievable — barrier in poor condition.</li>
+    <li><strong>rNom:</strong> Nominal design reliability — as designed and maintained.</li>
+    <li><strong>rMax:</strong> Upper bound — never exceed regardless of condition.</li>
+  </ul>
+  <p><strong>Final r = min(rNom × condition multiplier, rMax)</strong> — computed automatically by the tool.</p>
+
+  <div class="callout callout-note">
+    <strong class="label">ℹ Note</strong>
+    Never assign r = 1.0. No barrier is perfectly reliable. rMax in the library is capped below 1.0 for every entry.
+  </div>
+
+  <h3>Current vs Future r — The Most Common Mistake</h3>
+  <p>When adding from the library: <strong>future r is set automatically</strong> (proposed reliability). <strong>Current r starts at 0</strong> — you must enter what the barrier's actual reliability is today. Leaving current r at 0 correctly treats the barrier as not yet installed — do not enter a non-zero current r unless the barrier is physically installed and operational.</p>
+
+  <h3>Deactivate vs Remove</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Action</th><th>When to use</th></tr></thead>
+    <tbody>
+      <tr><td><code>⏸ Deactivate</code></td><td>Barrier installed but currently non-functional (e.g., out of service for maintenance). Excluded from SRS. Row kept as audit trail.</td></tr>
+      <tr><td><code>✕ Remove</code></td><td>Barrier physically removed from the crossing and will not be reinstalled. Permanently deletes row and frees library entry.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ════ QA CHECKLIST ════ -->
+<div class="section" id="qa">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <h2>Quality Assurance Checklist</h2>
+  </div>
+  <p>Complete before generating the final report. Every item must be checked by the primary analyst and independently verified by the peer reviewer.</p>
+
+  <h3>Data Completeness</h3>
+  <ul class="doc-list">
+    <li>☐ Incident data covers the full stated period. Dates verified against the source database extract.</li>
+    <li>☐ Near-miss records retrieved from operator reports AND CCTV logs — not estimated.</li>
+    <li>☐ Track intrusion count sourced from detector logs or CCTV — not estimated.</li>
+    <li>☐ Data period (dataYrs) matches the actual extract date range.</li>
+    <li>☐ T-parameters match the current timetable. svcOW verified against the service schedule.</li>
+  </ul>
+
+  <h3>Parameter Correctness</h3>
+  <ul class="doc-list">
+    <li>☐ S, P, E values are at default OR have documented justification.</li>
+    <li>☐ F_ALARP unchanged from agency policy OR has Safety Manager written approval.</li>
+    <li>☐ No barrier has r = 1.0 in any column.</li>
+    <li>☐ Library barriers use realistic condition (not "As designed" for barriers in service &gt;1 year).</li>
+    <li>☐ Deactivated barriers have a 📝 note explaining why they are excluded.</li>
+  </ul>
+
+  <h3>Results Validation</h3>
+  <ul class="doc-list">
+    <li>☐ F values in green cells match (Incidents + NM) ÷ dataYrs.</li>
+    <li>☐ T_col = svcOW × revHrs × 2 × minExp ÷ 60 (verify displayed value).</li>
+    <li>☐ High SRS warning banner NOT visible, OR a sensitivity check has been documented.</li>
+    <li>☐ Gap closure ≥ 50% for all currently red columns, OR a corrective action explains why not.</li>
+  </ul>
+
+  <h3>Report and Filing</h3>
+  <ul class="doc-list">
+    <li>☐ PDF saved: <code>SAF-YYYY-NNN_[CrossingName]_Assessment.pdf</code></li>
+    <li>☐ Reference number recorded in the safety register.</li>
+    <li>☐ Corrective Actions opened for all red-status columns.</li>
+    <li>☐ Next assessment scheduled at the recommended reassessment date.</li>
+    <li>☐ Peer reviewer has signed off.</li>
+  </ul>
+
+  <h3>Common Errors</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Error</th><th>How to detect and fix</th></tr></thead>
+    <tbody>
+      <tr><td>Near misses left at 0</td><td>If all NM fields are 0, confirm CCTV and operator records were reviewed, not just assumed empty.</td></tr>
+      <tr><td>Current r entered in future cells</td><td>Current r → yellow cells (left of divider). Future r → cyan/green cells (right of divider).</td></tr>
+      <tr><td>Library barrier current r not filled</td><td>After adding from library, find the new row and fill current-side cells — they start at 0.</td></tr>
+      <tr><td>Future SRS lower than current</td><td>Look for amber-underlined future cells (degradation scenario). Confirm this is intentional.</td></tr>
+      <tr><td>ALARP demonstrated with F=0</td><td>F=0 means no events entered. PHC and Sp are undefined and should show "—". Check data entry.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ════ GLOSSARY ════ -->
+<div class="section" id="glossary">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <h2>Glossary</h2>
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td class="tbl-label">AHC</td><td>Acceptable Hazard Cloud. Tolerable hazard level per shift at the ALARP target frequency: S × P × F_ALARP × E × T ÷ 8.</td></tr>
+      <tr><td class="tbl-label">ALARP</td><td>As Low As Reasonably Practicable. Risks must be reduced until further reduction costs are grossly disproportionate to the benefit.</td></tr>
+      <tr><td class="tbl-label">E</td><td>Exposed persons per event.</td></tr>
+      <tr><td class="tbl-label">F</td><td>Annual event frequency = (Incidents + Near Misses) ÷ data years.</td></tr>
+      <tr><td class="tbl-label">F_ALARP</td><td>ALARP-acceptable annual frequency. Policy input — not derived from observation.</td></tr>
+      <tr><td class="tbl-label">Gap closure rate</td><td>(Sp₂ − Sp₁) ÷ (SpALARP − Sp₁). Fraction of required Sp improvement delivered by proposed future controls.</td></tr>
+      <tr><td class="tbl-label">HazPoC</td><td>Hazard Point of Consequence. Unit of hazard: one unit = one risk-weighted hazard exposure per 8-hour shift.</td></tr>
+      <tr><td class="tbl-label">HCM</td><td>Hazard Cloud Model. The proprietary calculation methodology of Dr. Mohammad Saeed Torabi.</td></tr>
+      <tr><td class="tbl-label">P</td><td>Conditional probability of escalation to harm, given a barrier fails.</td></tr>
+      <tr><td class="tbl-label">PHC</td><td>Potential Hazard Cloud. Theoretical hazard if no barriers existed: RHC₁ ÷ (1 − SRS₁). Fixed anchor.</td></tr>
+      <tr><td class="tbl-label">r</td><td>Reliability value [0, 1]: probability that a barrier prevents escalation in a single exposure event.</td></tr>
+      <tr><td class="tbl-label">RHC</td><td>Residual Hazard Cloud. Hazard remaining after all active barriers: S × P × F × E × T ÷ 8.</td></tr>
+      <tr><td class="tbl-label">RHC₂</td><td>Future Residual Hazard Cloud: PHC × (1 − SRS₂).</td></tr>
+      <tr><td class="tbl-label">S</td><td>Severity. Consequence magnitude [0–10] if hazard escalates to an accident.</td></tr>
+      <tr><td class="tbl-label">Sp</td><td>Safety Performance = 1 − RHC ÷ PHC = SRS. Fraction of potential hazard controlled (%).</td></tr>
+      <tr><td class="tbl-label">SpALARP</td><td>Minimum Sp to demonstrate ALARP: 1 − AHC ÷ PHC.</td></tr>
+      <tr><td class="tbl-label">SRS</td><td>Safety Reliability Score = 1 − ∏(1 − rᵢ), capped at 0.999.</td></tr>
+      <tr><td class="tbl-label">T</td><td>Threat time. Exposure window: svcOW × revHrs × 2 × minExp ÷ 60 (collision), trkPct × darkHrs (intrusion).</td></tr>
+      <tr><td class="tbl-label">UCHC</td><td>Uncontrolled HazPoC Above AHC = max(RHC − AHC, 0).</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ════ REFERENCES ════ -->
+<div class="section" id="refs">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <h2>References and Further Guidance</h2>
+  </div>
+
+  <div class="ref-cards">
+    <div class="ref-card">
+      <a href="https://www.crossingsafety.org" target="_blank">www.crossingsafety.org</a>
+      <p>Grade crossing safety guidance, barrier reliability standards, and best practice resources for transit and highway-rail interface safety.</p>
+    </div>
+    <div class="ref-card">
+      <a href="https://www.safetydigitalbox.com" target="_blank">www.safetydigitalbox.com</a>
+      <p>Digital safety tools and resources, including ALARP assessment frameworks and reliability data for safety barrier evaluation.</p>
+    </div>
+  </div>
+
+  <h3>Regulatory Standards Referenced</h3>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Standard</th><th>Relevance</th></tr></thead>
+    <tbody>
+      <tr><td>49 CFR Part 673 — FTA Safety Management System</td><td>Hazard identification and risk reduction documentation requirements.</td></tr>
+      <tr><td>49 CFR Part 674 — State Safety Oversight</td><td>Quantitative evidence for SSOA-required crossing safety reviews.</td></tr>
+      <tr><td>APTA RT-OP-S-002 — Rail Transit Grade Crossing Safety</td><td>Structured hazard assessment at public grade crossings.</td></tr>
+      <tr><td>ISO 31000:2018 — Risk Management</td><td>Risk evaluation and treatment lifecycle framework.</td></tr>
+      <tr><td>ALARP Principle (UK HSE, internationally adopted)</td><td>Primary determination principle of this tool's output.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+</div><!-- end content-area -->
+</div><!-- end main -->
+
+<!-- ════ FOOTER ════ -->
+<footer id="site-footer">
+  <p>
+    <strong>MyHSE.app</strong> — HCM / ALARP Safety Performance Calculator v11<br>
+    Hazard Cloud Model methodology: exclusive intellectual property of <strong>Dr. Mohammad Saeed Torabi</strong>. All rights reserved.<br>
+    <a href="https://www.crossingsafety.org" target="_blank">www.crossingsafety.org</a> &nbsp;|&nbsp;
+    <a href="https://www.safetydigitalbox.com" target="_blank">www.safetydigitalbox.com</a>
+  </p>
+  <p style="margin-top:8px;font-size:11px;">
+    This tool is provided for professional informational purposes only. Dr. Mohammad Saeed Torabi and MyHSE.app disclaim all liability for any outcome arising from use or reliance upon outputs generated by this tool. All assessments must be reviewed by a qualified safety professional.
+  </p>
+</footer>
+
+<script>
+// Active section highlighting
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('#sidebar .sidebar-nav a');
+
+function setActiveNav() {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    const href = a.getAttribute('href').replace('#','');
+    a.classList.toggle('active', href === current ||
+      (a.href.includes('#sop-') && current === 'sop'));
+  });
+}
+window.addEventListener('scroll', setActiveNav, {passive:true});
+setActiveNav();
+
+// Close sidebar on outside click (mobile)
+document.addEventListener('click', e => {
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth <= 768 && sidebar.classList.contains('open') &&
+      !sidebar.contains(e.target) && e.target.id !== 'menu-toggle') {
+    sidebar.classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
