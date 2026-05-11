@@ -4,3 +4,5 @@
 !.dev.vars.example
 .env*
 !.env.example
+HOMEPAGE_REVIEW.docx
+HOMEPAGE_REVIEW.pdf

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://myhse-app.torabisaeed.workers.dev/sitemap.xml
